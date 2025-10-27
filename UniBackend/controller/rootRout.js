@@ -1,0 +1,9 @@
+const express=require("express")
+const router=express.Router()
+router.use("/faculties",require("./facultiesController"))
+router.use("/departments",require("./departmentController"))
+router.use("/programs",require("./programController"))
+router.use("/courses",require("./CoursesController"))
+router.use("/users",require("./UsersController"))
+router.use("/doctors",require("./DoctorController"))
+module.exports=router
