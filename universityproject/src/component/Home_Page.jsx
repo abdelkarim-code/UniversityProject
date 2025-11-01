@@ -17,6 +17,7 @@ import "slick-carousel/slick/slick-theme.css";
 import Slider from 'react-slick';
 //assets picture
 import campus from "../assets/campus.jpg"
+import { useNavigate } from 'react-router-dom';
 // import graduation from "../assets/graduation.jpg"
 // import stu1 from "../assets/stu1.jpg"
 // import stu2 from "../assets/stu2.jpg"
@@ -24,6 +25,7 @@ import campus from "../assets/campus.jpg"
 function Home() {
   
   const [scroll, setScrollStatus] = useState(false);
+  const navigate=useNavigate()
  useEffect(() => {
     AOS.init({ 
       duration: 1000,
@@ -102,6 +104,7 @@ function Home() {
                 color="primary" 
                 startIcon={<PersonIcon />}
                 className="cta-button2"
+                onClick={()=>navigate("/Liu/Login")}
               >
                 Login
               </Button></li>

@@ -1,18 +1,16 @@
 const express=require("express")
 const doctorRoute=express.Router()
 const knex=require("../db")
+
 //end points
 doctorRoute.post("/:userid/users/:department_id/departments",async(req,res)=>{
    if(Object.keys(req.body).length>0){
+    const {first_name,last_name,specialization}=req.body
+    const employee_code=`${first_name}.${last_name}`
      try{
-          const doctorMatch=await knex("doctors").where("employee_code",req.body.employee_code).first()
-          if(!doctorMatch){
-             const [newDoctor]=await knex("doctors").insert({...req.body,user_id:req.params.userid,department_id:req.params.department_id})
-  
-              return res.status(201).json({data:newDoctor,success:true})
-          }else{
-            return res.status(409).json({success:false})
-          }
+          const [newDoctor]=await knex("doctors").insert({specialization,employee_code:employee_code,user_id:req.params.userid,department_id:req.params.department_id})
+          return res.status(201).json({data:newDoctor,success:true})
+          
   
 }catch(err){
       return res.status(500).json(err)

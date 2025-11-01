@@ -5,8 +5,8 @@ const {faker}=require("@faker-js/faker")
 //end points
 userRoute.post("/",async(req,res)=>{
     // console.log(req.body)
-    
     const {first_name,last_name}=req.body
+    
     let password_hash=""
      let email=""
     if(Object.keys(req.body).length>0){
@@ -15,24 +15,32 @@ userRoute.post("/",async(req,res)=>{
        switch(req.body.role){
             case 2:
                 //doctor
+                
              email=`${first_name}.${last_name}@liu.edu.lb`
             password_hash=faker.string.alpha(8);
               const user=await knex("users").where("first_name",first_name).andWhere("last_name",last_name).first()
-   
-    if(!user)
-    {
-        
-        const [newUser]=await knex("users").insert({...req.body,email,password_hash})
-       return res.status(201).json({data:newUser,success:true})
-    }  else{
-         return res.status(409).json({success:false})
-    } 
-            
+        if(!user)
+            {
+                
+                const [newUser]=await knex("users").insert({...req.body,email,password_hash})
+            return res.status(201).json({data:newUser,success:true})
+            }  else{
+                return res.status(409).json({success:false})
+            } 
+            case 3:
+                //student
+               
+                let student_code=`${req.body.department_id}${new Date().getFullYear()%100}${faker.string.numeric(4)}`
+                 
+            email=`${student_code}@students.liu.edu.lb`
+            password_hash=faker.string.alpha(8);
+            const {gender,address,phone,role}=req.body
+             const [newUser]=await knex("users").insert({first_name,last_name,gender,address,phone,role,email,password_hash})
+            return res.status(201).json({data:newUser,success:true,student_code})
+          
             default:
                 return  res.send("end point work currently only for doctor")
         }
-    
-   
     }catch(err){
       return res.status(500).json(err)
     }
@@ -91,7 +99,7 @@ userRoute.delete("/:id",async(req,res)=>{
      if(affectedRow>0){
        return res.status(200).json({success:true})
      }else{
-        return res.status(200).json({success:false})
+        return res.status(404).json({success:false})
      }
     
    

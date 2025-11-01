@@ -4,6 +4,7 @@ import axios from 'axios';
 import { base_url } from '../../../context';
 const initialState={
     departments:[],
+    deUnderFaculty:[],
     programs:[],
     isloading:false,
     status:0
@@ -71,6 +72,19 @@ export const fetchProgramsByDepartment = createAsyncThunk(
     }
   }
 );
+export const fetchDepartmentByFaculty = createAsyncThunk(
+  "Department/fetchByFaculty",
+  async (faculty_id,{ rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${base_url}/departments/${faculty_id}/faculties`);
+    
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
+    }
+  }
+);
 //***************End thunks funtions
 const DepartmentSlice = createSlice({
   name: 'Department',
@@ -105,6 +119,8 @@ const DepartmentSlice = createSlice({
       }).addCase(fetchProgramsByDepartment.fulfilled,(state,action)=>{
         console.log("payload"+JSON.stringify(action.payload))
         state.programs=action.payload
+      }).addCase(fetchDepartmentByFaculty.fulfilled,(state,action)=>{
+        state.deUnderFaculty=action.payload
       })
   }
   

@@ -6,4 +6,7 @@ router.use("/programs",require("./programController"))
 router.use("/courses",require("./CoursesController"))
 router.use("/users",require("./UsersController"))
 router.use("/doctors",require("./DoctorController"))
+router.use("/students",require("./StudentController"))
+router.use("/users/Login",require("./AuthController"))
+router.use("/rooms",require("./RoomsController"))
 module.exports=router

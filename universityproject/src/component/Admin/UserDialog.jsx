@@ -1,18 +1,20 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, Radio, RadioGroup, useTheme } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, Radio, RadioGroup } from '@mui/material';
 import React,{ useEffect, useState} from 'react'
 import { useAlert } from '../../context';
 import { TextField, Autocomplete,Select,MenuItem } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDepartments } from '../redux/Slices/DepartmentSlice';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { fetchDepartments, fetchProgramsByDepartment } from '../redux/Slices/DepartmentSlice';
+import { addDoctor } from '../redux/Slices/DoctorSlice';
+import { addstudent } from '../redux/Slices/StudentSlice';
+
 function UserDialog({open,onClose}) {
  const [value, setValue] = useState("");
  const [identifier,setidentifier]= useState("");
  const department=useSelector((state)=>state.department)
+  const student=useSelector((state)=>state.student)
  const {setopen}=useAlert()
- const theme =useTheme()
- const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
  const dispatch=useDispatch()
+ const {isloading,status}=useSelector(state=>state.doctor)
  useEffect(()=>{
  dispatch(fetchDepartments())
  },[])
@@ -48,11 +50,31 @@ const handleCancel = () => {
     }
     
   };
-   const handleSubmit = async(event) => {
+  useEffect(()=>{
+    if(status==201){
+        setopen({state:true,message:"Doctor added successfully",color:"success"})
+        onClose(false)
+    }else if(status==409){
+       setopen({state:true,message:"Please use a different name. Update either your first name or last name.",color:"error"})
+    }else if(student.status==201){
+        setopen({state:true,message:"student added successfully",color:"success"})
+        onClose(false)
+    }
+
+  },[status,student.isloading])
+
+   const handleSubmit = async(event,doctor) => {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
-       const DepartmentData=Object.fromEntries(formData.entries())
-    console.log(DepartmentData)
+       const Data=Object.fromEntries(formData.entries())
+       if(doctor){
+        
+         dispatch(addDoctor(Data))
+       }else{
+        console.log("student: ",Data)
+        dispatch(addstudent(Data))
+       }
+    
       
     };
 
@@ -73,7 +95,6 @@ const handleCancel = () => {
      <Dialog
       sx={identifier==""?{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }:{}}
       maxWidth={identifier==""&&"xs"}
-      fullScreen={fullScreen}
       open={open}
     
     >
@@ -99,8 +120,15 @@ const handleCancel = () => {
 
 
         )}   
-        {(identifier=='Doctors'&&!department.isloading)&&(
-               <form onSubmit={handleSubmit} id="subscription-form">
+        {((identifier=='Doctors'||identifier=="Students")&&!department.isloading)&&(
+               <form onSubmit={(e)=>{
+                if(identifier=="Doctors"){
+                 handleSubmit(e,true)
+                }else{
+                    handleSubmit(e,false)
+                }
+                
+                }} id="subscription-form">
                                            <TextField
                                                             label="First Name"
                                                             name="first_name"
@@ -110,6 +138,12 @@ const handleCancel = () => {
                                                             required
                                                             fullWidth
                                                             autoFocus
+                                                            slotProps={
+                                                               identifier=="Doctors"?{htmlInput: {
+                                                                    pattern: "^\\S{1,20}$",
+                                                                    title: "No spaces allowed. Maximum 20 characters.",
+                                                                    }}:{}
+                                                                }
                                                         />
                                                       
                                                       
@@ -121,6 +155,12 @@ const handleCancel = () => {
                                                             margin="dense"
                                                             required
                                                             fullWidth
+                                                             slotProps={{
+                                                                    htmlInput: {
+                                                                    pattern: "^\\S{1,20}$",
+                                                                    title: "No spaces allowed. Maximum 20 characters.",
+                                                                    },
+                                                                }}
                                                         />
                                                         <TextField
                                                             label="Phone"
@@ -168,6 +208,7 @@ const handleCancel = () => {
                                                             />
                                                         
                                                             )} />
+                                                          {identifier=="Doctors"&&(
                                                              <TextField
                                                             label="Specialization"
                                                             name="specialization"
@@ -178,6 +219,8 @@ const handleCancel = () => {
                                                             fullWidth
                                                             autoFocus
                                                         />
+
+                                                          )} 
                                                           <FormControl fullWidth margin="dense">
                                                         <InputLabel id="department-label">Choose a department</InputLabel>
                                                            <Select  
@@ -189,7 +232,7 @@ const handleCancel = () => {
                                                                     labelId='department-label'
                                                                     
                                                                     fullWidth
-                                                                  
+                                                                     onChange={(e)=>dispatch(fetchProgramsByDepartment(e.target.value))}
                                                                     variant="standard"
                                                                     
                                                                     >
@@ -210,7 +253,41 @@ const handleCancel = () => {
 
                                                         </FormControl>
                                                    
+                                                    {(department.programs.length>0&&identifier=="Students")&&(
+                                              <FormControl fullWidth margin="dense">
+                                                <InputLabel id="program-label">Choose a Program</InputLabel>
+                                             <Select  
+                                                      autoFocus
+                                                      required
+                                                      margin="dense"
+                                                      id="program_id"
+                                                      name="program_id"
+                                                      labelId='program-label'
+                                                      fullWidth
+                                                      
+                                                    
+                                                      variant="standard"
+                                                      
+                                                      >
+                                                    {
+                                                    
+                                                        department.programs.map((d)=>(
+                                                    <MenuItem value={d.program_id} key={d.program_id}>{d.name}</MenuItem>
+
+                                                    ))
+                                                      
+                                                  
+                                                    
+                                                    
+                                                    }
+                                                    
                                                             
+                                            </Select>
+                                            </FormControl>
+
+
+
+                                            )}          
 
 
 
@@ -226,7 +303,7 @@ const handleCancel = () => {
         <Button autoFocus onClick={handleCancel}>
           Cancel
         </Button>
-        <Button onClick={handleOk} type={"submit"} form="subscription-form">Ok</Button>
+        <Button onClick={handleOk} type={"submit"} form="subscription-form" loading={isloading||student.isloading}>Ok</Button>
       </DialogActions>
     </Dialog>
   )

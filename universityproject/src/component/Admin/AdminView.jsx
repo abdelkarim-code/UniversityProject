@@ -7,7 +7,6 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
-import SummarizeIcon from '@mui/icons-material/Summarize';
 import PeopleIcon from '@mui/icons-material/People';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -17,6 +16,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ChooseCompoent from './ChooseCompoent';
 import { useAlert } from '../../context';
@@ -25,7 +25,9 @@ import { useSelector,useDispatch } from 'react-redux';
 import { fetchFaculties } from '../redux/Slices/FacultySlice';
 import AcademicSection from './SideBarComponent/Academic_Section';
 import UserDialog from './UserDialog';
-
+import DoorFrontIcon from '@mui/icons-material/DoorFront';
+import RoomManagment from './SideBarComponent/rooms/RoomsManagment';
+import CourseManagment from './SideBarComponent/course_managment/CourseManagment';
 const demoTheme = createTheme({
 
   palette: {
@@ -44,7 +46,7 @@ const demoTheme = createTheme({
   cssVariables: {
     colorSchemeSelector: 'data-toolpad-color-scheme',
   },
-  colorSchemes: { light: true, dark: true },
+  colorSchemes: { light: true, dark: false},
   breakpoints: {
     values: {
       xs: 0,
@@ -100,9 +102,9 @@ const NAVIGATION = [
     icon: <FactCheckIcon/>,
   },
   {
-    segment: "Reports",
-    title: "Reports",
-    icon: <SummarizeIcon/> ,
+    segment: "Rooms",
+    title: "Rooms",
+    icon: <DoorFrontIcon/> ,
   },
   {
     kind: 'divider',
@@ -164,14 +166,18 @@ function AdminView() {
   if(faculties.length===0){
     dispatch(fetchFaculties())
   }
-  },[openDialogCompoent])
+  },[openDialogCompoent.status])
   
   
 
   const renderItem=(path)=>{
     switch(path){
       case "/Academics":
-        return <AcademicSection />
+        return <AcademicSection {...demoTheme}/>
+      case "/Rooms":
+        return <RoomManagment/>
+      case '/CourseManagement':
+        return <CourseManagment/>
       
         
         default:

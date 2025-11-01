@@ -1,6 +1,7 @@
 const express=require("express")
 const faRoute=express.Router()
 const knex=require("../db")
+const { fa } = require("@faker-js/faker")
 
 //end points
 faRoute.post("/:departmentid/departments",async(req,res)=>{
@@ -97,4 +98,6 @@ faRoute.delete("/:courseid",async(req,res)=>{
       return res.status(500).json(err)
     }
 })
+
+
 module.exports=faRoute

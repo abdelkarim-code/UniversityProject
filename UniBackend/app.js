@@ -4,10 +4,10 @@ const PORT=8000
 const https=require("https")
 const fs=require("fs")
 const cors=require("cors")
-const options={
-    key:fs.readFileSync("key.pem"),
-    cert:fs.readFileSync("cert.pem")
-}
+const options = {
+  key: fs.readFileSync('127.0.0.1+1-key.pem'),
+  cert: fs.readFileSync('127.0.0.1+1.pem'),
+};
 //middleware
 app.use(cors({
   origin: ["http://localhost:5173", "https://127.0.0.1:8000"],

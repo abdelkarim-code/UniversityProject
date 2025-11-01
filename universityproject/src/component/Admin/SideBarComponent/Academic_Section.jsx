@@ -7,13 +7,19 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { editFaculty, fetchFaculties } from '../../redux/Slices/FacultySlice';
 import { useAlert } from '../../../context';
-function AcademicSection() {
+import Department_Component from '../Department_Component';
+
+
+function AcademicSection(theme) {
+  console.log(theme)
     const {faculties,isloading,status}=useSelector((state)=>state.faculty)
     const {setopen}=useAlert()
     const [expanded, setExpanded] = useState(false);
     const [editdata,seteditdata]=useState({name:"",description:"",faculty_id:-1})
+     const [departmentView,setdepartmentView]=useState({status:false,faculty_id:0,name:""})
     const dispatch=useDispatch()
 useEffect(()=>{
+  setdepartmentView({status:false,faculty_id:0,name:""})
  if(status==409){
      setopen({state:true,message:"Duplicate entry detected — please use a different faculty name",color:"error"})
  }else if (status==204){
@@ -25,17 +31,24 @@ useEffect(()=>{
   const editFacultyData=()=>{
          dispatch(editFaculty(editdata))
   }
+  console.log(departmentView)
+  if(departmentView.status){
+    return (<Department_Component facultyid={departmentView.faculty_id} close={setdepartmentView} name={departmentView.name} />)
+  }else{
+
+  
   return (
     <Box display={"flex"} gap={"30px"} alignContent={"center"} flexWrap={"wrap"}>
          {
           (!isloading&&faculties.length>0)?(faculties.map((f)=>(
             <Card 
             key={f.faculty_id}
+           
              sx={{ 
                 width: '100%', 
                 maxWidth: 350, 
                 m: 2, 
-                cursor:"pointer",
+               
                 boxShadow: 3,
                 transition: '0.3s',
                 '&:hover': {
@@ -50,9 +63,11 @@ useEffect(()=>{
                                 <SchoolIcon color="primary" sx={{ mr: 1 }} />
                             </Tooltip>
                             {editdata.faculty_id!=f.faculty_id?
-                            <Typography fontWeight={"650"}>
+                           <Tooltip title="see related departments">
+                                  <Typography sx={{ cursor:"pointer"}} fontWeight={"650"} onClick={()=>setdepartmentView({status:true,faculty_id:f.faculty_id,name:f.name})}>
                               {f.name}
-                            </Typography>:
+                            </Typography>
+                           </Tooltip> :
                                <TextField
                                     margin="dense"
                                     label="Faculty Name"
@@ -172,6 +187,7 @@ useEffect(()=>{
         
     </Box>
   )
+}
 }
 
 export default AcademicSection

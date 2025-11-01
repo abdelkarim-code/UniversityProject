@@ -48,6 +48,7 @@ export const editFaculty = createAsyncThunk(
 export const fetchFaculties = createAsyncThunk(
   "faculty/fetchAll",
   async (_,{ rejectWithValue }) => {
+    console.log("base_url: ",base_url)
     try {
       const response = await axios.get(`${base_url}/faculties`);
       return response.data
@@ -78,6 +79,9 @@ const FacultySlice = createSlice({
    }).addCase(fetchFaculties.fulfilled,(state,action)=>{
     console.log("fullfilled")
      state.faculties=action.payload
+   }).addCase(fetchFaculties.rejected,(state,action)=>{
+    // state.faculties=action.payload
+    console.log(state.faculties,action.payload)
    }).addCase(editFaculty.pending,(state)=>{
     state.isloading=true
     state.status=0
