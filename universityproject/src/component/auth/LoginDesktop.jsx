@@ -11,7 +11,7 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 
  function LoginDesktop({handleSubmit,isloading}) {
-  
+    
     React.useEffect(()=>{
       document.body.style.backgroundColor="#044774ff"
       return () =>document.body.style.backgroundColor="#ffff"
@@ -58,12 +58,13 @@ import CardContent from '@mui/material/CardContent';
        {/* login card */}
     <Card
       sx={{
-        minWidth: 400,
+        minWidth: 500,
+        minHeight:300,
         margin: "auto",
         mt: 8,
         borderRadius: 3,
         boxShadow: "0 8px 24px rgba(224, 201, 201, 0.02)",
-        backgroundColor: "#ffffff",
+        backgroundColor:"#e8dfdfff",
       }}
     >
       <CardHeader
@@ -102,6 +103,7 @@ import CardContent from '@mui/material/CardContent';
             required
             fullWidth
             autoFocus
+          
           
           />
           <TextField

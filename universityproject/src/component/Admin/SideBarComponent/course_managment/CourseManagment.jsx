@@ -5,7 +5,7 @@ import CourseAssignmentForm from './CourseAssignmentForm'
 function CourseManagment() {
   return (
    <Stack spacing={5}>
-      <CourseAssignmentForm/>
+      <h1>hhsj</h1>
    </Stack>
   )
 }

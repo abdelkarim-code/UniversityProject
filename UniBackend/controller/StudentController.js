@@ -2,8 +2,7 @@ const express=require("express")
 const studentRoute=express.Router()
 const knex=require("../db")
 const {faker}=require("@faker-js/faker")
-//end points
-//# student_id, user_id, student_code, department_id, program_id, gpa
+
 
 studentRoute.post("/:user_id/users/:department_id/departments/:program_id/programs",async(req,res)=>{
    if(Object.keys(req.body).length>0){
@@ -81,5 +80,34 @@ studentRoute.delete("/:student_id",async(req,res)=>{
     }catch(err){
       return res.status(500).json(err)
     }
+})
+studentRoute.get("/availableCourses",async(req,res)=>{
+   // department_id, , semester, program_id ,level
+  
+
+   if(Object.keys(req.body).length>0){
+   try{
+       const {department_id,  semester, program_id ,level,student_id}=req.body
+    if(semester=="Fall"||semester=="Spring"){
+      
+    }
+     const availableCourses=await knex("courses").where(b=>{
+       b.where("department_id",department_id)
+       .andWhere("semester",semester)
+       .andWhere("program_id",program_id)
+       .andWhere("level",level)
+     }).whereNotIn("course_id",function(){
+       this.select("course_id").from("course_registrations")
+       .where("student_id",student_id)
+       .andWhere("semester",semester)
+     })
+     return res.status(200).json(availableCourses)  
+ 
+}catch(err){
+      return res.status(500).json(err)
+    }
+}else{
+    return res.status(500).json({err:"no body parameter founded"})
+}
 })
 module.exports=studentRoute

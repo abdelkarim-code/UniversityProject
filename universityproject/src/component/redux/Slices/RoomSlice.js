@@ -11,7 +11,10 @@ const initialState={
         campus:"",
         blocks:[]
     },
-    duplicated:false
+    duplicated:false,
+    campuses:[],
+    blocks:[],
+    
 }
 //===========thunks funtions
 export const createRooms = createAsyncThunk(
@@ -29,6 +32,45 @@ export const createRooms = createAsyncThunk(
       }
       
       return rejectWithValue({ status: err.response?.status || 500 });
+    }
+  }
+);
+export const fetchCampuses = createAsyncThunk(
+  "campus/fetchAll",
+  async (_,{ rejectWithValue }) => {
+    console.log("from fetch campuses")
+    try {
+      const response = await axios.get(`${base_url}/rooms/getCampuses`);
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
+    }
+  }
+);
+export const fetchBlocks = createAsyncThunk(
+  "block/fetchAll",
+  async (campus,{ rejectWithValue }) => {
+   console.log("from fetch blocks: ",campus)
+    try {
+      const response = await axios.get(`${base_url}/rooms/getBlocks/${campus}`);
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
+    }
+  }
+);
+export const fetchRooms = createAsyncThunk(
+  "rooms/fetchAll",
+  async (block,{ rejectWithValue }) => {
+   console.log("from fetch rooms: ",block)
+    try {
+      const response = await axios.get(`${base_url}/rooms/getRooms/${block}`);
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
     }
   }
 );
@@ -58,6 +100,10 @@ const RoomSlice = createSlice({
      DeleteBlock:(state,action)=>{
         console.log("delete block",action.payload)
         state.requestData.blocks.splice(action.payload.index,1)
+    },
+    ClearBlocks:state=>{state.blocks=[]
+      state.rooms=[]
+      
     }
   },
   extraReducers:(builder)=>{
@@ -74,10 +120,22 @@ const RoomSlice = createSlice({
      }).addCase(createRooms.rejected,(state,action)=>{
          state.isloading=false
         state.status=action.payload.status
+     }).addCase(fetchCampuses.fulfilled,(state,action)=>{
+        state.campuses=action.payload
+     }).addCase(fetchBlocks.pending,state=>{
+      state.isloading=true
+     }).addCase(fetchBlocks.fulfilled,(state,action)=>{
+      state.isloading=false
+      state.blocks=action.payload
+     }).addCase(fetchRooms.pending,state=>{
+      state.isloading=true
+     }).addCase(fetchRooms.fulfilled,(state,action)=>{
+      state.isloading=false
+      state.rooms=action.payload
      })
   }
   
 });
 
-export const { addCampus,addBlock,DeleteBlock } = RoomSlice.actions;
+export const { addCampus,addBlock,DeleteBlock ,ClearBlocks} = RoomSlice.actions;
 export default RoomSlice.reducer;

@@ -71,9 +71,16 @@ if(identifier=="programs"||identifier=="Courses"){
         const ProgramData=Object.fromEntries(formData.entries())
         dispatch(createProgram(ProgramData))
     }else if(identifier=="Courses"){
+        
         const CourseData=Object.fromEntries(formData.entries())
-        console.log("Course Data: ",CourseData)
-       dispatch(addCourse(CourseData))
+        
+       
+        if(CourseData?.program_id){
+            dispatch(addCourse(CourseData))
+        }else{
+         setopen({state:true,message:"No program added under this department",color:"warning"})
+        }
+      
     }
     
   };
@@ -171,7 +178,7 @@ if(identifier=="programs"||identifier=="Courses"){
               fullWidth
               variant="standard"
               slotProps={{
-                    htmlInput: { maxLength: 4 ,pattern: "[A-Z]*",  
+                    htmlInput: { maxLength: 6,pattern: "[A-Z]*",  
                               title: "Only UpperCase letters are allowed",},
                 }}
               
@@ -268,7 +275,7 @@ if(identifier=="programs"||identifier=="Courses"){
               type="number"
               fullWidth
               variant="standard" 
-              slotProps={{htmlInput:{ min: 3 }}}
+              slotProps={{htmlInput:{ min: facultyId=="MSc"?2:3 }}}
             />
            
 

@@ -16,7 +16,8 @@ import {
   List,
   Stack,
   AppBar,
-  Toolbar
+  Toolbar,
+  Autocomplete
 } from "@mui/material";
 import { Add, Delete, ViewList } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
@@ -69,6 +70,7 @@ function RoomManagment() {
   const blocks=useSelector(state=>state.room.requestData.blocks)
   const requestData=useSelector(state=>state.room.requestData)
   const {duplicated,isloading,status}=useSelector(state=>state.room)
+  const campus=useSelector(state=>state.room.requestData.campus)
   const addfloor=()=>{
     if(floor.startRoom>=100&&floor.endRoom>floor.startRoom){
         if(floors.length>0){
@@ -131,7 +133,7 @@ if(status==201){
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
              <ToggleButtonGroup
-                       color="primary"
+                       color="warning"
                        value={section}
                        exclusive
                        onChange={(e) => setSection(e.target.value)}
@@ -171,27 +173,40 @@ if(status==201){
         {/* Form Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" fontWeight="600" color="primary" sx={{ mb: 3 }}>
-            Assignment Details
+            Campus name
           </Typography>
-           <TextField
+          <Autocomplete
+          fullWidth
+           options={["Bekaa", "Beirut", "Saida", "Tripoli", "Nabatieh", "Mount Lebanon", "Tyre", "Rayak"]}
+           renderInput={(data)=>(
+                <TextField
+                           {...data}
                             fullWidth
                             label="Campus Name"
                             placeholder="e.g. Saida"
                             variant="outlined"
+                            value={campus}
                             onChange={(e)=>dispatch(addCampus(e.target.value))}
                           />
+           )}
+          
+          />
+            
+         
+         
           
         </Box>
-          <Stack direction={"row"} spacing={2}>
-                             {blocks.length>0&&blocks.map((block,index)=><BlockPrint blockData={block} index={index} />)}
-         
-                      </Stack>
-        {/* Additional Information Section */}
+          
+        
+
         <Box>
           <Typography variant="h6" fontWeight="600" color="primary" sx={{ mb: 3 }}>
-            Additional Information
+           Blocks
           </Typography>
-          
+          <Stack direction={"row"} spacing={2} sx={{mb:2}}>
+                             {blocks.length>0&&blocks.map((block,index)=><BlockPrint blockData={block} index={index}  />)}
+         
+          </Stack>
             <Paper
                   variant="outlined"
                   sx={{

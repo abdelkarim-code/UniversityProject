@@ -10,6 +10,9 @@ import store from "./component/redux/store";
 import Login from "./component/auth/Login";
 import Student_Home_page from "./component/Student/Student_Home_page";
 import Doctor_Home_page from "./component/Doctor/Doctor_Home_page";
+import NOTFOUND from "./component/NotFound";
+import Main_Panel from "./component/Student/sections/Main_Panel";
+import Registration from "./component/Student/sections/Registration";
 
 const theme = createTheme({
   typography: {
@@ -31,8 +34,15 @@ function App() {
       <Route path="/Liu" element={<Home/>}/>
       <Route path="/Liu/Login" element={<Login/>}/>
       <Route path="/Liu/AdminView" element={<AdminView/>}/>
-      <Route path="/home/students" element={<Student_Home_page/>}/>
-      <Route path="/home/doctors" element={<Doctor_Home_page/>}/>
+
+      <Route path="/Liu/students/*" element={<Student_Home_page/>}>
+               <Route index element={<Main_Panel  sx={{ zIndex: 11 }}/>}/>
+              <Route path="Registration" element={<Registration/>}/>
+              
+      </Route>
+
+      <Route path="/Liu/doctors" element={<Doctor_Home_page/>}/>
+        <Route path="*" element={<NOTFOUND message={"The page you’re looking for doesn’t exist or may have been moved"}/>}/>
     </Routes>
       </AlertProvider>
        </Provider>

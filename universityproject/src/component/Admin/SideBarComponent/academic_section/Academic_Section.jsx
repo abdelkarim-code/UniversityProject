@@ -5,18 +5,20 @@ import SchoolIcon from '@mui/icons-material/School';
 import { useDispatch, useSelector } from 'react-redux';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { editFaculty, fetchFaculties } from '../../redux/Slices/FacultySlice';
-import { useAlert } from '../../../context';
-import Department_Component from '../Department_Component';
+import { editFaculty, fetchFaculties } from '../../../redux/Slices/FacultySlice';
+import { useAlert } from '../../../../context';
+import Department_Component from './Department_Component';
+import AlertDialog from '../../DeleteDialog';
 
 
-function AcademicSection(theme) {
-  console.log(theme)
+function AcademicSection() {
+  
     const {faculties,isloading,status}=useSelector((state)=>state.faculty)
     const {setopen}=useAlert()
     const [expanded, setExpanded] = useState(false);
     const [editdata,seteditdata]=useState({name:"",description:"",faculty_id:-1})
      const [departmentView,setdepartmentView]=useState({status:false,faculty_id:0,name:""})
+      const [deleteDta,setdeleteDta]=useState({status:false,faculty_id:0,name:""})
     const dispatch=useDispatch()
 useEffect(()=>{
   setdepartmentView({status:false,faculty_id:0,name:""})
@@ -31,7 +33,7 @@ useEffect(()=>{
   const editFacultyData=()=>{
          dispatch(editFaculty(editdata))
   }
-  console.log(departmentView)
+ 
   if(departmentView.status){
     return (<Department_Component facultyid={departmentView.faculty_id} close={setdepartmentView} name={departmentView.name} />)
   }else{
@@ -63,7 +65,7 @@ useEffect(()=>{
                                 <SchoolIcon color="primary" sx={{ mr: 1 }} />
                             </Tooltip>
                             {editdata.faculty_id!=f.faculty_id?
-                           <Tooltip title="see related departments">
+                           <Tooltip title="View related departments">
                                   <Typography sx={{ cursor:"pointer"}} fontWeight={"650"} onClick={()=>setdepartmentView({status:true,faculty_id:f.faculty_id,name:f.name})}>
                               {f.name}
                             </Typography>
@@ -108,7 +110,7 @@ useEffect(()=>{
                         </Box>
                       
                     </Stack>
-    
+                <AlertDialog open={deleteDta.status} setOpen={setdeleteDta} Data={deleteDta.name} id={deleteDta.faculty_id}  />
                     <Collapse in={expanded} timeout="auto" unmountOnExit>
                    
                    
@@ -151,7 +153,9 @@ useEffect(()=>{
                              }
 
                              {editdata.faculty_id!=f.faculty_id&&(
-                               <Fab color='error'size='small'>
+                               <Fab color='error'size='small' onClick={()=>{
+                                 setdeleteDta({status:true,faculty_id:f.faculty_id,name:f.name})
+                               }}>
                                 <Tooltip title={ "Delete faculty data"}>
                                     <DeleteIcon />
                                 </Tooltip>

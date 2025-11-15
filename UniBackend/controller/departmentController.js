@@ -53,7 +53,7 @@ deRoute.put("/:departmentid",async(req,res)=>{
     const {departmentid}=req.params
     const {name,code}=req.body
     try{
-        const departemntMatch=await knex("departments").where("name",name).where("code",code).whereNot("department_id",Number(departmentid)).first()
+        const departemntMatch=await knex("departments").where("name",name).orWhere("code",code).whereNot("department_id",Number(departmentid)).first()
                 if(!departemntMatch){
                 const affectedRow=await knex("departments").where({department_id:departmentid}).update(req.body)
                 if(affectedRow>0){

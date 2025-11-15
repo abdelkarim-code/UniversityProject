@@ -54,7 +54,40 @@ try{
 roomRoute.get("/",async(req,res)=>{
   try{
    const rooms=await knex("rooms").select("*").offset(5).limit(5)
-  res.json(rooms)
+   return res.status(200).json(rooms)
+  }catch(err){
+    return res.status(500).json({err:err.message})
+  }
+ 
+})
+roomRoute.get("/getCampuses",async(req,res)=>{
+  try{
+   const rooms=await knex("rooms").select("campus").groupBy("campus")
+  return res.status(200).json(rooms)
+  }catch(err){
+    return res.status(500).json({err:err.message})
+  }
+ 
+})
+roomRoute.get("/getBlocks/:campus",async(req,res)=>{
+  
+  try{
+    const{campus}=req.params
+
+   const rooms=await knex("rooms").select("block").where("campus",campus).groupBy("block")
+  return res.status(200).json(rooms)
+  }catch(err){
+    return res.status(500).json({err:err.message})
+  }
+ 
+})
+roomRoute.get("/getRooms/:block",async(req,res)=>{
+  
+  try{
+    const{block}=req.params
+
+   const rooms=await knex("rooms").select("*").where("block",block)
+  return res.status(200).json(rooms)
   }catch(err){
     return res.status(500).json({err:err.message})
   }

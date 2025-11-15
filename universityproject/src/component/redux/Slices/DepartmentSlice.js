@@ -29,6 +29,7 @@ export const createDepartment = createAsyncThunk(
     }
   }
 );
+
 export const createProgram = createAsyncThunk(
   "Program/create",
   async ({credit_price,degree_type,department_id,duration_years,name,total_credits}, { rejectWithValue }) => {
@@ -85,6 +86,42 @@ export const fetchDepartmentByFaculty = createAsyncThunk(
     }
   }
 );
+export const editDepartment = createAsyncThunk(
+  "Department/edit",
+  async ({code,description,name,department_id}, { rejectWithValue }) => {
+  
+    try {
+      const response = await axios.put(`${base_url}/departments/${department_id}`, {code,description,name});
+      return response.status
+    } catch (err) {
+      
+      console.log(err.message)
+      if (err.response?.status === 409) {
+        return rejectWithValue({ status: 409 });
+      }
+      
+      return rejectWithValue({ status: err.response?.status || 500 });
+    }
+  }
+);
+export const deleteDepartment = createAsyncThunk(
+  "Department/delete",
+  async ( department_id, { rejectWithValue }) => {
+  
+    try {
+      const response = await axios.delete(`${base_url}/departments/${department_id}`);
+      return response.status
+    } catch (err) {
+      
+      console.log(err.message)
+      if (err.response?.status === 409) {
+        return rejectWithValue({ status: 409 });
+      }
+      
+      return rejectWithValue({ status: err.response?.status || 500 });
+    }
+  }
+);
 //***************End thunks funtions
 const DepartmentSlice = createSlice({
   name: 'Department',
@@ -117,14 +154,33 @@ const DepartmentSlice = createSlice({
         state.status=action.payload?.status
         
       }).addCase(fetchProgramsByDepartment.fulfilled,(state,action)=>{
-        console.log("payload"+JSON.stringify(action.payload))
-        state.programs=action.payload
+      state.programs=action.payload
+        state.status=0
       }).addCase(fetchDepartmentByFaculty.fulfilled,(state,action)=>{
         state.deUnderFaculty=action.payload
-      })
+          state.status=0
+      }).addCase(editDepartment.pending,(state)=>{
+          state.isloading=true
+          state.status=0
+         }).addCase(editDepartment.fulfilled,(state,action)=>{
+          state.isloading=false
+          state.status=action.payload
+         }).addCase(editDepartment.rejected,(state,action)=>{
+          state.isloading=false
+          state.status=action.payload.status
+         }).addCase(deleteDepartment.pending,(state)=>{
+             state.isloading=true
+             state.status=0
+            }).addCase(deleteDepartment.fulfilled,(state,action)=>{
+             state.isloading=false
+             state.status=action.payload
+            }).addCase(deleteDepartment.rejected,(state,action)=>{
+             state.isloading=false
+             state.status=action.payload.status
+            })
   }
   
 });
 
-// export const { increment, decrement } = counterSlice.actions;
+// export const { clearstatus } = DepartmentSlice.actions;
 export default DepartmentSlice.reducer;

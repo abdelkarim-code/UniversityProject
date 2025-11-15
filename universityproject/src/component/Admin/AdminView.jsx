@@ -2,7 +2,7 @@ import  {  useEffect, useState,useMemo} from 'react'
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { createTheme } from '@mui/material/styles';
-import { Box } from '@mui/material';
+import { Avatar, Box } from '@mui/material';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EventNoteIcon from '@mui/icons-material/EventNote';
@@ -16,24 +16,29 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ChooseCompoent from './ChooseCompoent';
 import { useAlert } from '../../context';
 import Dialogs_Component from './Dialogs_Component';
 import { useSelector,useDispatch } from 'react-redux';
 import { fetchFaculties } from '../redux/Slices/FacultySlice';
-import AcademicSection from './SideBarComponent/Academic_Section';
+import AcademicSection from './SideBarComponent/academic_section/Academic_Section';
 import UserDialog from './UserDialog';
 import DoorFrontIcon from '@mui/icons-material/DoorFront';
 import RoomManagment from './SideBarComponent/rooms/RoomsManagment';
 import CourseManagment from './SideBarComponent/course_managment/CourseManagment';
+import { AddCircleOutline } from '@mui/icons-material';
+import { ListAlt } from '@mui/icons-material';
+import CourseAssignmentForm from './SideBarComponent/course_managment/CourseAssignmentForm';
+import liulogo from '../../assets/liulogo.png'
+import AddSemesterDialog from './AddSemesterDialog';
+import SchoolIcon from '@mui/icons-material/School';
 const demoTheme = createTheme({
 
   palette: {
-    // primary: {
-    //   main: '#024c7dff',
-    // },
+    primary: {
+      main: '#003C64',
+    },
     // success: {
     //   main: '#024c7dff', 
     // },
@@ -83,12 +88,24 @@ const NAVIGATION = [
     title: 'Academics',
     icon: <MenuBookIcon />,
   },
-  {
+
+{
     segment: 'CourseManagement',
     title: 'Course Management',
     icon: <AssignmentIcon/>,
+     children: [
+      {
+        segment: 'addassigmentcourse',
+        title: 'Assign Course',
+        icon: <AddCircleOutline />,
+      },
+      {
+        segment: 'viewassignments',
+        title: 'View Assignments',
+        icon: <ListAlt />,
+      },
+    ],
   },
-
   
   {
     segment: 'ExamsResults',
@@ -131,7 +148,8 @@ const actions = [
   { icon: <PostAddIcon />, name: 'New Academic Record' },
   { icon: <PersonAddIcon />, name: 'Register User' },
   { icon: <NoteAddIcon />, name: 'Schedule Exam' },
-  { icon: <CloudUploadIcon />, name: 'Upload Document' },
+  { icon: <SchoolIcon />, name: 'Add Semester' },
+  
 ];
 
 function useDemoRouter(initialPath) {
@@ -153,6 +171,7 @@ function AdminView() {
   const router = useDemoRouter('/Academics');
   const [openChoosenDialog,setOpenChoosenDialog]=useState(false)
   const [openUserDialog,setOpenUserDialog]=useState(false)
+   const [openSemesterDialog,setOpenSemesterDialog]=useState(false)
   const [openDialogCompoent,setopenDialogCompoent]=useState({status:false,identifier:""})
   const {setopen}=useAlert()
   const {faculties}=useSelector(state=>state.faculty)
@@ -162,7 +181,7 @@ function AdminView() {
   if(!openDialogCompoent.status&&openDialogCompoent.identifier=="return"){
     setOpenChoosenDialog(true)
   }
-  console.log("render")
+  
   if(faculties.length===0){
     dispatch(fetchFaculties())
   }
@@ -176,9 +195,10 @@ function AdminView() {
         return <AcademicSection {...demoTheme}/>
       case "/Rooms":
         return <RoomManagment/>
-      case '/CourseManagement':
+      case '/CourseManagement/viewassignments':
         return <CourseManagment/>
-      
+      case '/CourseManagement/addassigmentcourse':
+        return <CourseAssignmentForm/>
         
         default:
           console.log("router not specified")
@@ -192,6 +212,9 @@ function AdminView() {
       case "Register User":
            setOpenUserDialog(true)
       break
+      case 'Add Semester':
+        setOpenSemesterDialog(true)
+        break
         default:console.log("no action like this")
      }
  }
@@ -219,8 +242,8 @@ function AdminView() {
       theme={demoTheme}
       window={window}
       branding={{
-        logo: <DashboardIcon color='primary' />,
-        title: "Administration Dashboard",
+        logo: <Avatar alt="Logo" src={liulogo} sizes='small'/>,
+        title: "Liu Administration Dashboard",
         
       }}
     >
@@ -235,7 +258,7 @@ function AdminView() {
      <ChooseCompoent open={openChoosenDialog} onClose={onClosechoosenDialog}   />
        <Dialogs_Component open={openDialogCompoent.status}  Close={setopenDialogCompoent} identifier={openDialogCompoent.identifier}/>
       <UserDialog open={openUserDialog} onClose={setOpenUserDialog}/>
-
+      <AddSemesterDialog open={openSemesterDialog} onClose={setOpenSemesterDialog}/>
         <SpeedDial
         ariaLabel="SpeedDial basic example"
         sx={{ position: 'absolute', bottom: 16, right: 16 }}

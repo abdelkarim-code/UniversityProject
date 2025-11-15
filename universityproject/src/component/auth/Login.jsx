@@ -6,7 +6,8 @@ import { UserLogin } from '../redux/Slices/AuthSlice';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../../context';
-
+import "../../styles/login.css"
+import { Box } from '@mui/material';
 function Login() {
     const isMobile = useMediaQuery({ query: '(max-width: 728px)' });
     const dispatch=useDispatch()
@@ -21,24 +22,32 @@ function Login() {
   };
   
 useEffect(()=>{
-    console.log(status)
+    
 if(status==200){
     navigate(path)
 }else if(status==401){
  alert.setopen({state:true,message:"Incorrect crediential detected",color:"error"})
 }
+
 },[status])
+return (
+         <Box class="liu-background ">
+
+
+        {isMobile?
+      
+
+    <LoginMobile handleSubmit={handleSubmit} isloading={isloading}/>
+  
+  
+    :
+ <LoginDesktop handleSubmit={handleSubmit} isloading={isloading}/>
+    
+  }
+  </Box>
+)
  
 
-  if(isMobile){
-      return (
-    <LoginMobile handleSubmit={handleSubmit} isloading={isloading}/>
-  )
-  }else{
-    return (
- <LoginDesktop handleSubmit={handleSubmit} isloading={isloading}/>
-    )
-  }
  
 }
 

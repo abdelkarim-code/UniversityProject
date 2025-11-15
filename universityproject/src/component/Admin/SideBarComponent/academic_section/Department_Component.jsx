@@ -1,10 +1,14 @@
 import { Avatar, Box, Card, CardContent, Chip, Container, IconButton, List, 
- Menu, MenuItem, Paper, styled, Typography, } from '@mui/material'
-import {useEffect, useState} from 'react'
+ Menu, MenuItem, Paper, styled, Typography,
+ useTheme, } from '@mui/material'
+import {useEffect,  useState} from 'react'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDepartmentByFaculty } from '../redux/Slices/DepartmentSlice';
+import { deleteDepartment, fetchDepartmentByFaculty } from '../../../redux/Slices/DepartmentSlice';
 import LinearProgress from '@mui/material/LinearProgress';
+import CoursesView from './CoursesView';
+import EditDepartmentDialog from './EditDepartmentDialog';
+import { useAlert } from '../../../../context';
 
 const SuccessCard = styled(Card)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
@@ -18,24 +22,60 @@ const SuccessCard = styled(Card)(({ theme }) => ({
 
 
 function Department_Component({facultyid,name,close}) {
-      
+        const theme = useTheme(); 
     const [anchor,setanchor]=useState(null)
+    const [department_id,setdepartment_id]=useState(0)
       const OpenAnchor=Boolean(anchor)
+      const [editData,setEditData]=useState({open:false,data:{}})
+      const {setopen}=useAlert()
       const dispatch=useDispatch()
-      const {deUnderFaculty}=useSelector(state=>state.department)
-      console.log(deUnderFaculty)
-      useEffect(()=>{
-        console.log(facultyid)
+      const {deUnderFaculty,status}=useSelector(state=>state.department)
+      const [confirming, setConfirming] = useState(false);
+      const [view,setview]=useState("dep")
+     const  onClose=()=>{
+        setEditData({open:false,data:{}})
+        setanchor(null)
+
+     }
+     const fetchDepartment=()=>{
         if(facultyid!=0){
           dispatch(fetchDepartmentByFaculty(facultyid))
         }
       
-      },[])
+     }
+      useEffect(()=>{
+     
+        fetchDepartment()
+
+      },[facultyid])
+      useEffect(()=>{
+       
+           if(status==409){
+           setopen({state:true,message:"Duplicate entry detected — please use a different department name or code",color:"error"})
+       }else if (status==204){
+        fetchDepartment()
+          onClose()
+          setopen({state:true,message:"Department edited successfully",color:"success"})
+          
+       }else if (status==200){
+        fetchDepartment()
+          setConfirming(false)
+          setanchor(null)
+          setopen({state:true,message:"Department deleted successfully",color:"success"})
+          
+       }
+        
+      
+      },[status])
+     if(view=="cou"){
+        return <CoursesView setview={setview} department_id={department_id}/>
+     }else{
+
      
 
   return (
     <Container maxWidth={"xl"}>
-
+     <EditDepartmentDialog open={editData.open} onClose={onClose} Data={editData.data}/>
       <SuccessCard>
         <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',userSelect: "none", cursor: "default" }}>
           <Box>
@@ -79,7 +119,7 @@ function Department_Component({facultyid,name,close}) {
           sx={{
             width: 56,
             height: 56,
-            backgroundColor: '#2196f3',
+            backgroundColor: theme.palette.primary.light,
             fontWeight: 'bold',
             fontSize: '1rem',
           }}
@@ -99,24 +139,45 @@ function Department_Component({facultyid,name,close}) {
       </Box>
 
       {/* Right side: Action button */}
-      <IconButton edge="end" onClick={(e) => setanchor(e.currentTarget)}>
+      <IconButton edge="end" onClick={(e) =>{
+         setanchor(e.currentTarget)
+         setdepartment_id(d.department_id)
+         setEditData({...editData,data:{...d}})
+         }}>
         <MoreVertIcon />
       </IconButton>
     </Paper>
     )):<h1>no department</h1>}
     <Menu anchorEl={anchor} open={OpenAnchor} onClose={()=>setanchor(null)}>
+      
     <MenuItem onClick={()=>{
       setanchor(null)
-      
+      setEditData({...editData,open:true})
       }}>Edit</MenuItem>
+   {!confirming?
     <MenuItem onClick={()=>{
-      setanchor(null)
+      setConfirming(true)
       
-      }}>Delete</MenuItem>
+      }}>Delete</MenuItem>:  
+      <MenuItem sx={{ color: 'error.main' }} onClick={()=>{
+        if(department_id!=0){
+          dispatch(deleteDepartment(department_id))
+        }
+      }}>
+          ⚠️ Confirm Delete
+        </MenuItem>
+   }
+   
+
+       <MenuItem onClick={()=>{
+      setview("cou")
+      setanchor(null)
+      }}>View related courses</MenuItem>
   </Menu>
     </List>
      </Container>
   )
+     }
 }
 
 export default Department_Component

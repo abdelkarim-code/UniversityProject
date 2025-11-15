@@ -34,6 +34,19 @@ export const addDoctor = createAsyncThunk(
     }
   }
 );
+export const fetchDoctorsByDepartment = createAsyncThunk(
+  "doctor/fetchBydepartment",
+  async (department_id,{ rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${base_url}/doctors/${department_id}/departments`);
+    
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
+    }
+  }
+);
 //***************End thunks funtions
 const doctorslice = createSlice({
   name: 'doctor',
@@ -52,6 +65,9 @@ const doctorslice = createSlice({
         console.log("from rejected section")
         state.isloading=false
         state.status=action.payload.status
+      }).addCase(fetchDoctorsByDepartment.fulfilled,(state,action)=>{
+       
+       state.doctors=action.payload
       })
   }
   

@@ -2,9 +2,10 @@ const express=require("express")
 const userRoute=express.Router()
 const knex=require("../db")
 const {faker}=require("@faker-js/faker")
+const omit=require("lodash/omit")
 //end points
 userRoute.post("/",async(req,res)=>{
-    // console.log(req.body)
+   
     const {first_name,last_name}=req.body
     
     let password_hash=""
@@ -55,7 +56,25 @@ userRoute.get("/:id",async(req,res)=>{
     try{
      const userByID=await knex("users").where({user_id:id}).first()
      if(userByID){
-        return res.status(200).json(userByID)
+        return res.status(200).json(omit(userByID,["password_hash"]))
+     }else{
+        return res.status(404).json({err:"not found"})
+     }
+    }catch(err){
+      return res.status(500).json(err)
+    }
+})
+userRoute.get("/system/getstudentInfo/:id",async(req,res)=>{
+    const {id}=req.params
+    try{
+     const userByID=await knex("users").where("users.user_id",id)
+     .join("students","users.user_id","=","students.user_id")
+     .join("departments","departments.department_id","=","students.department_id")
+     .join("programs","programs.program_id","=","students.program_id")
+     .select("users.*","students.*","programs.*","departments.*",{program_name:"programs.name"})
+     .first()
+     if(userByID){
+        return res.status(200).json(omit(userByID,["password_hash"]))
      }else{
         return res.status(404).json({err:"not found"})
      }

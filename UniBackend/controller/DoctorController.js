@@ -19,10 +19,14 @@ doctorRoute.post("/:userid/users/:department_id/departments",async(req,res)=>{
     return res.status(500).json({err:"no body parameter founded"})
 }
 })
-doctorRoute.get("/",async(req,res)=>{
-   
+//# course_id, department_id, code, name, description, credit_hours, level, semester, program_id
+
+doctorRoute.get("/:department_id/departments",async(req,res)=>{
+   const {department_id}=req.params
     try{
-     const doctors=await knex("doctors").select("*")
+     const doctors=await knex("doctors")
+     .join("users","doctors.user_id","=","users.user_id")
+     .select("doctors.*","users.first_name","users.last_name").where("department_id",department_id)
     return res.status(200).json(doctors)
     }catch(err){
       return res.status(500).json(err)

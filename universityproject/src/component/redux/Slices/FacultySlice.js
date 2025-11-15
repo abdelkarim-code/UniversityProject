@@ -48,13 +48,31 @@ export const editFaculty = createAsyncThunk(
 export const fetchFaculties = createAsyncThunk(
   "faculty/fetchAll",
   async (_,{ rejectWithValue }) => {
-    console.log("base_url: ",base_url)
+   
     try {
       const response = await axios.get(`${base_url}/faculties`);
       return response.data
     } catch (err) {
       console.log(err.message)
       return rejectWithValue({ status: err});
+    }
+  }
+);
+export const deleteFaculty = createAsyncThunk(
+  "faculty/delete",
+  async ( faculty_id , { rejectWithValue }) => {
+  
+    try {
+      const response = await axios.delete(`${base_url}/faculties/${faculty_id}`);
+      return response.status
+    } catch (err) {
+      
+      console.log(err.message)
+      if (err.response?.status === 409) {
+        return rejectWithValue({ status: 409 });
+      }
+      
+      return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
 );
@@ -77,11 +95,8 @@ const FacultySlice = createSlice({
      state.status=action.payload?.status
      
    }).addCase(fetchFaculties.fulfilled,(state,action)=>{
-    console.log("fullfilled")
-     state.faculties=action.payload
-   }).addCase(fetchFaculties.rejected,(state,action)=>{
-    // state.faculties=action.payload
-    console.log(state.faculties,action.payload)
+    state.faculties=action.payload
+     state.status=0
    }).addCase(editFaculty.pending,(state)=>{
     state.isloading=true
     state.status=0
@@ -89,6 +104,15 @@ const FacultySlice = createSlice({
     state.isloading=false
     state.status=action.payload
    }).addCase(editFaculty.rejected,(state,action)=>{
+    state.isloading=false
+    state.status=action.payload.status
+   }).addCase(deleteFaculty.pending,(state)=>{
+    state.isloading=true
+    state.status=0
+   }).addCase(deleteFaculty.fulfilled,(state,action)=>{
+    state.isloading=false
+    state.status=action.payload
+   }).addCase(deleteFaculty.rejected,(state,action)=>{
     state.isloading=false
     state.status=action.payload.status
    })
