@@ -4,10 +4,7 @@ import {
   Toolbar,
   IconButton,
   Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+ 
   Card,
   CardContent,
   CardActions,
@@ -16,9 +13,7 @@ import {
   Grid,
   Box,
   Container,
-  Avatar,
-  Breadcrumbs,
-  Link,
+
   Autocomplete,
   TextField,
   useTheme
@@ -33,17 +28,20 @@ import {
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProgramsByDepartment } from '../../../redux/Slices/DepartmentSlice';
-import { fetchCoursesByProgram } from '../../../redux/Slices/CourseSlice';
+import { deleteCourse, fetchCoursesByProgram } from '../../../redux/Slices/CourseSlice';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import NOTFOUND from '../../../NotFound';
 import AssignPrerequisitesDialog from './AssignPrerequisitesDialog';
+import CourseEditDialog from '../../Dialogs/editCourseDialog';
 const CourseView = ({setview,department_id}) => {
   const dispatch=useDispatch()
   const theme=useTheme()
   const ref=useRef(false)
+  const [editCourse, setEditCourse] = useState({ open: false, data: null });
   const {programs}=useSelector(state=>state.department)
   const {courses}=useSelector(state=>state.course)
   const [AssignDialog,setAssignDialog]=useState({status:false,course_id:0,course_name:""})
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState(null);
   useEffect(()=>{
     if(department_id)
     dispatch(fetchProgramsByDepartment(department_id))
@@ -96,12 +94,13 @@ const CourseView = ({setview,department_id}) => {
            <Autocomplete
            options={programs||[]}
            getOptionLabel={op=>op?.name}
-           key={new Date()}
+           key={new Date().getMilliseconds()}
            defaultValue={programs[0]}
+           
            defaultChecked
             sx={{ 
               minWidth: 220,
-              
+              cursor:"none",
               backgroundColor: 'rgba(255,255,255,0.9)',
               borderRadius: 2,
               
@@ -128,49 +127,21 @@ const CourseView = ({setview,department_id}) => {
          
         </Toolbar>
       </AppBar>
-
+{/* {"Dialog"} */}
+       <CourseEditDialog
+                  open={editCourse.open}
+                  onClose={() => setEditCourse({ open: false, data: null })}
+                  initialData={editCourse.data}
+                
+                />
       {/* Main Content */}
       <Container maxWidth="xl" sx={{ py: 4, px: 3 }}>
-        {/* Summary Row */}
-        {/* <Box sx={{ 
-          mb: 4, 
-          p: 3, 
-          backgroundColor: 'white', 
-          borderRadius: 3,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          border: '1px solid #e0e0e0'
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box>
-              <Typography variant="h5" component="h2" fontWeight="600" gutterBottom>
-                Academic Courses
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Total Courses: <strong>{courses.length}</strong> • 
-                Active Semesters: <strong>Fall 2024, Spring 2024</strong>
-              </Typography>
-            </Box>
-            <Button 
-              variant="contained" 
-              sx={{
-                borderRadius: 3,
-                px: 3,
-                py: 1,
-                textTransform: 'none',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #1a73e8 0%, #6c8ef5 100%)'
-              }}
-            >
-              Add New Course
-            </Button>
-          </Box>
-        </Box> */}
-
+       
         {/* Course Grid */}
         <AssignPrerequisitesDialog AssignDialog={AssignDialog} setAssignDialog={setAssignDialog}/>
         <Grid container spacing={3}>
           {courses.length>0?courses.map((course, index) => (
-            <Grid item xs={12} sm={6} lg={4} key={index}>
+            <Grid size={10} key={index}>
               <Card 
                 elevation={0}
                 sx={{
@@ -281,36 +252,51 @@ const CourseView = ({setview,department_id}) => {
                   borderTop: '1px solid #f0f0f0',
                   mt: 'auto'
                 }}>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
-                    color="primary"
-                    startIcon={<EditIcon />}
-                    sx={{ 
-                      borderRadius: 3,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      px: 2,
-                      flex: 1
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    sx={{ 
-                      borderRadius: 3,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      px: 2,
-                      flex: 1
-                    }}
-                  >
-                    Delete
-                  </Button>
+                  {deleteConfirmId !== course.course_id ? (
+                            <>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                startIcon={<EditIcon />}
+                                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, px: 2, flex: 1 }}
+                                onClick={() => setEditCourse({ open: true, data: course })}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, px: 2, flex: 1 }}
+                                onClick={() => setDeleteConfirmId(course.course_id)} // store the course id
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="secondary"
+                                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, px: 2, flex: 1 }}
+                                onClick={() => setDeleteConfirmId(null)} // cancel
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="error"
+                                sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600, px: 2, flex: 1 }}
+                                onClick={() => dispatch(deleteCourse(course))}
+                              >
+                                Confirm
+                              </Button>
+                            </>
+                          )}
                    <Button 
                     size="small" 
                     variant="outlined" 

@@ -81,9 +81,10 @@ faRoute.put("/:courseid",async(req,res)=>{
     
     const {courseid}=req.params
     const {code ,name}=req.body
+    
     try{
      const courseMatch=await knex("courses").whereNot("course_id",Number(courseid)).andWhere(function(){this.where("name",name).orWhere("code",code)}).first()
-     console.log(courseMatch,courseid)
+     
       if(!courseMatch){
        
       const affectedRow=await knex("courses").where({course_id:Number(courseid)}).update(req.body)
@@ -116,13 +117,40 @@ faRoute.delete("/:courseid",async(req,res)=>{
     }
 })
 
-faRoute.post("/AssignCoursetoDoctor",async(req,res)=>{
-    if(Object.keys(req.body).length>0){  
+faRoute.post("/AssignCoursetoDoctor/:campus",async(req,res)=>{
+    if(Object.keys(req.body).length>0){ 
+      const {campus}=req.params 
+      const {room_id,schedule_time,semester,course_id,doctor_id,section}=req.body
      try{
       
-    
-     const [newCourseAssign]=await knex("course_assignments").insert(req.body)
+      knex.transaction(async trx=>{
+           const RoomBusy=await trx("course_assignments").where("room_id",room_id)
+           .andWhere("schedule_time",schedule_time).andWhere("semester",semester)
+           .whereIn("room_id",function(){
+            this.select("id").from("rooms").where("campus",campus)
+           }).join("rooms","course_assignments.room_id","=","rooms.id").first()
+           if(RoomBusy){
+            return res.status(409).json({message:`Room ${RoomBusy?.room_number} busy. Change room or schedule.`})
+           }
+          const SectionUniqueness=await trx("course_assignments").where("course_assignments.semester",semester)
+          .andWhere("course_assignments.course_id",course_id).andWhere("course_assignments.section",section)
+          .join("courses","course_assignments.course_id","=","courses.course_id").select("courses.name","course_assignments.section").first()
+          if(SectionUniqueness){
+             return res.status(409).json({message:`Section ${SectionUniqueness?.section} for course ${SectionUniqueness?.name} is taken.`})
+          }
+          const DoctorAvailability=await trx("course_assignments").where("course_assignments.semester",semester).andWhere("course_assignments.schedule_time",schedule_time)
+          .andWhere("course_assignments.doctor_id",doctor_id)
+          .join("doctors","course_assignments.doctor_id","=","doctors.doctor_id").select("doctors.employee_code","course_assignments.schedule_time")
+          .first()
+          if(DoctorAvailability){
+            const dr_name=DoctorAvailability?.employee_code.split(".")[0]+" "+DoctorAvailability?.employee_code.split(".")[1]
+             return res.status(409).json({message:`Doctor ${dr_name}  is already assigned at ${DoctorAvailability?.schedule_time}` })
+          }
+       // add logic scheduling
+        const [newCourseAssign]=await trx("course_assignments").insert(req.body)
        return res.status(201).json({data:newCourseAssign,success:true})
+      })
+     
     
    
     }catch(err){
@@ -130,7 +158,7 @@ faRoute.post("/AssignCoursetoDoctor",async(req,res)=>{
       return res.status(500).json(err.message)
     }
 }else{
-    return res.status(500).json({err:"no body parameter founded"})
+    return res.status(400).json({err:"no body parameter founded"})
 }
 })
 faRoute.post("/AssignPrerequisitesToCourses",async(req,res)=>{
@@ -184,5 +212,96 @@ try{
       return res.status(500).json(err)
     }
 })
+faRoute.get("/:departmentid/departments/getCoursesTypes",async(req,res)=>{
+    const coursedb=knex("courses")
+   
+    const {departmentid}=req.params
+    try{
+     const coursesByDepartment=await coursedb.groupBy("course_category").where("department_id",departmentid)
+     .select("course_category as type")
+     if(coursesByDepartment){
+        return res.status(200).json(coursesByDepartment)
+     }else{
+        return res.status(404).json({err:"not found"})
+     }
+    }catch(err){
+      return res.status(500).json(err)
+    }
+})
+// Get assignments by semester and department
+faRoute.get("/getAssignDoctorCoursesByDept/:departmentid/:semesterid", async (req, res) => {
+  const { departmentid, semesterid } = req.params;
 
+  if (!departmentid || !semesterid) {
+    return res.status(400).json({ err: "Department ID and Semester ID are required" });
+  }
+
+  try {
+    const assignments = await knex("course_assignments")
+      .where("course_assignments.semester", semesterid)
+      .join("courses", "course_assignments.course_id", "=", "courses.course_id")
+      .join("doctors", "course_assignments.doctor_id", "=", "doctors.doctor_id")
+      .join("rooms", "course_assignments.room_id", "=", "rooms.id")
+      .where("courses.department_id", departmentid)  
+      .select(
+        "course_assignments.*",
+        "courses.name as course_name",
+        "courses.code as course_code",
+        "courses.credit_hours as credit",
+        "rooms.room_number",
+        "doctors.employee_code as doctor_name"
+      );
+
+    return res.status(200).json(assignments);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ err });
+  }
+});
+faRoute.delete("/deleteAssign/:assignid",async(req,res)=>{
+    const {assignid:assignment_id}=req.params
+try{
+     const affectedRow=await knex("course_assignments").where({assignment_id}).delete()
+     if(affectedRow>0){
+       return res.status(200).json({success:true})
+     }else{
+        return res.status(404).json({success:false})
+     }
+    }catch(err){
+      return res.status(500).json(err)
+    }
+})
+faRoute.get("/assignment/:assignmentId/registrations", async (req, res) => {
+  const { assignmentId } = req.params;
+
+  try {
+    const result = await knex("course_registrations as rr")
+      .join("students as s", "rr.student_id", "s.student_id")
+      .join("users as u", "s.user_id", "u.user_id")
+      .join("departments as d","s.department_id","=","d.department_id")
+      .select(
+       "rr.*",
+       "s.*",
+       "u.first_name",
+       "u.last_name",
+       "d.name as department_name",
+       "d.code as department_code"
+      )
+      .where("rr.assignment_id", assignmentId);
+
+   
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
 module.exports=faRoute

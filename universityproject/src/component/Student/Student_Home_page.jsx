@@ -1,11 +1,11 @@
 import React, { useEffect, useState} from 'react';
 import {Typography, Card, Box, Container, useTheme,useMediaQuery,} from '@mui/material';
-import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import { Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import StudentInfoCard from './StudentInfoCard';
 import AppBarHeader from './AppBarHeader';
 import Regsitration from './sections/Registration';
 import { useDispatch, useSelector } from 'react-redux';
-import { getActiveUserInfo } from '../redux/Slices/AuthSlice';
+import { CheckTokenValidation, getActiveUserInfo } from '../redux/Slices/AuthSlice';
 import CurrentSemesterCard from './sections/Current_semester';
 import { getCurrentSemester } from '../redux/Slices/SemesterSlice';
 import moment from 'moment/moment';
@@ -17,6 +17,9 @@ const StudentPanel = () => {
   const [scroll,setscroll]=useState(false)
   const dispatch=useDispatch()
   const [current_semester,setcurrent_semester]=useState({})
+  const location=useLocation()
+  const navigate=useNavigate()
+  
   useEffect(()=>{
         document.querySelector("html").style.scrollBehavior = "smooth";
       const handleScroll=()=>{
@@ -27,31 +30,44 @@ const StudentPanel = () => {
           setscroll(true)
         }
       }
-  
-      window.addEventListener("scroll",handleScroll)
-      return ()=>window.removeEventListener("scroll",handleScroll,{passive: true})
-    },[])
- 
-const navigate=useNavigate()
-useEffect(() => {
-  //checking
-  if(active_user&&Object.keys(active_user).length==0){
-      const id=localStorage.getItem("user_id")||0
-      if(id==0)
-        navigate("/Liu/Login")
-      else
-        dispatch(getActiveUserInfo(id))
-  }
-const handlePopState = (e) => {
+      const handlePopState = (e) => {
     e.preventDefault();
    navigate("/Liu/Login")
     
 }
 window.addEventListener("popstate", handlePopState);
-return () => {
-    window.removeEventListener("popstate", handlePopState);
-};
-}, [navigate]);
+      window.addEventListener("scroll",handleScroll)
+      return ()=>{
+        window.removeEventListener("scroll",handleScroll,{passive: true})
+        window.removeEventListener("popstate", handlePopState);
+    }
+    },[])
+ 
+
+const TokenCheck=async()=>{
+  try{
+    const req=await dispatch(CheckTokenValidation(true)).unwrap()
+     
+  if(req.status==200){
+    if(active_user&&Object.keys(active_user).length==0){
+        const {user_info}=req
+        dispatch(getActiveUserInfo({userid:user_info.user_id,type:"getstudentInfo"}))
+  }
+  }else if(req.status==401){
+    navigate("/Liu/Login")
+  }
+  }catch(err){
+    console.log("from token check: ",err)
+     navigate("/Liu/Login")
+  }
+  
+}
+
+useEffect(() => {
+   TokenCheck()
+
+
+}, []);
  
  
     const fetchCurrentSemester=async()=>{
@@ -91,10 +107,16 @@ const menuItems = [
       </Box>
 
         ):
+        location.pathname=="/Liu/students/Registration"?
           <Box
         sx={{top:0,position:"fixed",transform:"translateX(230%)", zIndex: 100000 }}
       >
        <CurrentSemesterCard semesterData={current_semester}/>
+      </Box>:
+           <Box
+        sx={{top:0,position:"fixed",transform:"translateX(155%)", zIndex: 100000 }}
+      >
+        <StudentInfoCard studentData={active_user}  />
       </Box>
         } 
       {/* Main Content */}

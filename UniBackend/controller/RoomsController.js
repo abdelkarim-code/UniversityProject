@@ -69,24 +69,42 @@ roomRoute.get("/getCampuses",async(req,res)=>{
   }
  
 })
-roomRoute.get("/getBlocks/:campus",async(req,res)=>{
-  
-  try{
-    const{campus}=req.params
+roomRoute.get("/getBlocks/:campus", async (req, res) => {
+  try {
+    const { campus } = req.params;
 
-   const rooms=await knex("rooms").select("block").where("campus",campus).groupBy("block")
-  return res.status(200).json(rooms)
-  }catch(err){
-    return res.status(500).json({err:err.message})
+    const blocks = await knex("rooms")
+      .select(
+        "block",
+        // Count distinct floors in this block (subquery)
+        knex("rooms")
+          .countDistinct("floor")
+          .whereRaw("rooms.block = r.block")
+          .andWhere("campus", campus)
+          .as("floor_count"),
+
+        // Count total rooms in the block (subquery)
+        knex("rooms")
+          .count("*")
+          .whereRaw("rooms.block = r.block")
+          .andWhere("campus", campus)
+          .as("total_rooms")
+      )
+      .from({ r: "rooms" }) // alias main table
+      .where("campus", campus)
+      .groupBy("block");
+
+    return res.status(200).json(blocks);
+  } catch (err) {
+    return res.status(500).json({ err: err.message });
   }
- 
-})
-roomRoute.get("/getRooms/:block",async(req,res)=>{
+});
+roomRoute.get("/getRooms/:block/:campus",async(req,res)=>{
   
   try{
-    const{block}=req.params
+    const{block,campus}=req.params
 
-   const rooms=await knex("rooms").select("*").where("block",block)
+   const rooms=await knex("rooms").select("*").where("block",block).andWhere("campus",campus)
   return res.status(200).json(rooms)
   }catch(err){
     return res.status(500).json({err:err.message})

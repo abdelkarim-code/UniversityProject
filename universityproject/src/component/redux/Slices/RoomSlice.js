@@ -14,6 +14,8 @@ const initialState={
     duplicated:false,
     campuses:[],
     blocks:[],
+    selectedBlock:'',
+    selectedCampus:''
     
 }
 //===========thunks funtions
@@ -63,10 +65,10 @@ export const fetchBlocks = createAsyncThunk(
 );
 export const fetchRooms = createAsyncThunk(
   "rooms/fetchAll",
-  async (block,{ rejectWithValue }) => {
+  async ({block,campus},{ rejectWithValue }) => {
    console.log("from fetch rooms: ",block)
     try {
-      const response = await axios.get(`${base_url}/rooms/getRooms/${block}`);
+      const response = await axios.get(`${base_url}/rooms/getRooms/${block}/${campus}`);
       return response.data
     } catch (err) {
       console.log(err.message)
@@ -104,6 +106,12 @@ const RoomSlice = createSlice({
     ClearBlocks:state=>{state.blocks=[]
       state.rooms=[]
       
+    },
+    setSelectedBlock:(state,action)=>{
+      state.selectedBlock=action.payload
+    },
+      setSelectedCampus:(state,action)=>{
+      state.selectedCampus=action.payload
     }
   },
   extraReducers:(builder)=>{
@@ -137,5 +145,5 @@ const RoomSlice = createSlice({
   
 });
 
-export const { addCampus,addBlock,DeleteBlock ,ClearBlocks} = RoomSlice.actions;
+export const { addCampus,addBlock,DeleteBlock ,ClearBlocks,setSelectedBlock,setSelectedCampus} = RoomSlice.actions;
 export default RoomSlice.reducer;

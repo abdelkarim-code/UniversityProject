@@ -2,10 +2,12 @@
 import { createAsyncThunk, createSlice, } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { base_url } from '../../../context';
+import { omit } from 'lodash';
 const initialState={
     students:[],
     isloading:false,
-    status:0
+    status:0,
+   
 }
 //===========thunks funtions
 // # user_id, first_name, last_name, email, password_hash, phone, address, gender, date_created, role
@@ -29,6 +31,36 @@ export const addstudent = createAsyncThunk(
       }
     } catch (err) {
       return rejectWithValue({ status: err.response?.status || 500,error:err });
+    }
+  }
+);
+export const registerCourseBystudent = createAsyncThunk(
+  "student/registerCourseToStudent",
+  async (data, { rejectWithValue }) => {
+    
+    
+   try {
+      const response = await axios.post(`${base_url}/students/registerCourse/${data?.student_id}`, omit(data,["student_id"]));
+      return response.status
+    } catch (err) {
+      
+      console.log(err.message)
+      
+      
+      return rejectWithValue({ status: err.response?.status || 500 });
+    }
+  }
+);
+// Fetch students by year
+export const fetchStudentsByYear = createAsyncThunk(
+  "students/fetchByYear",
+  async (year, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${base_url}/students/${year}`);
+      return response.data;
+    } catch (err) {
+      console.error(err.message);
+      return rejectWithValue(err.response?.data || { status: 500, message: err.message });
     }
   }
 );

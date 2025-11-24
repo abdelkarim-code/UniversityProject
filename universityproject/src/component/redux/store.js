@@ -8,6 +8,7 @@ import AuthSliceReducer from './Slices/AuthSlice'
 import RoomSliceReducer from './Slices/RoomSlice'
 import SemesterSliceReducer from './Slices/SemesterSlice'
 import Cou_reg_SliceReducer from './Slices/Student_Course_registration_Slice'
+import ExamSliceReducer from "./Slices/ExamSlice"
 const store = configureStore({
   reducer: {
     faculty:FacultySliceReducer,
@@ -18,8 +19,8 @@ const store = configureStore({
     auth:AuthSliceReducer,
     room:RoomSliceReducer,
     semester:SemesterSliceReducer,
-    cou_reg:Cou_reg_SliceReducer
-
+    cou_reg:Cou_reg_SliceReducer,
+    exam:ExamSliceReducer
   },
   devTools:true
 });

@@ -31,8 +31,14 @@ import { AddCircleOutline } from '@mui/icons-material';
 import { ListAlt } from '@mui/icons-material';
 import CourseAssignmentForm from './SideBarComponent/course_managment/CourseAssignmentForm';
 import liulogo from '../../assets/liulogo.png'
-import AddSemesterDialog from './AddSemesterDialog';
+import AddSemesterDialog from './Dialogs/AddSemesterDialog';
 import SchoolIcon from '@mui/icons-material/School';
+import AddExamDialog from './Dialogs/AddExamDialog';
+import { fetchDepartments } from '../redux/Slices/DepartmentSlice';
+import { getsemesters } from '../redux/Slices/SemesterSlice';
+import ExamTable from './SideBarComponent/Exams/ExamTable';
+import Display from './SideBarComponent/users/Display';
+import SemesterSectionDemo from './SideBarComponent/MainLogoSection/SemesterCard';
 const demoTheme = createTheme({
 
   palette: {
@@ -113,11 +119,11 @@ const NAVIGATION = [
     icon: <EventNoteIcon/>,
    
   },
-  {
-    segment: 'Attendance',
-    title: 'Attendance',
-    icon: <FactCheckIcon/>,
-  },
+  // {
+  //   segment: 'Attendance',
+  //   title: 'Attendance',
+  //   icon: <FactCheckIcon/>,
+  // },
   {
     segment: "Rooms",
     title: "Rooms",
@@ -172,9 +178,12 @@ function AdminView() {
   const [openChoosenDialog,setOpenChoosenDialog]=useState(false)
   const [openUserDialog,setOpenUserDialog]=useState(false)
    const [openSemesterDialog,setOpenSemesterDialog]=useState(false)
+   const [AddExamDialogOpen,setAddExamDialogOpen]=useState(false)
   const [openDialogCompoent,setopenDialogCompoent]=useState({status:false,identifier:""})
   const {setopen}=useAlert()
   const {faculties}=useSelector(state=>state.faculty)
+  const [semesters, setSemesters] = useState([]);
+  const [departments, setDepartments] = useState([]);
    const dispatch=useDispatch()
   useEffect(()=>{
   //  router.navigate("/allttem")
@@ -199,7 +208,13 @@ function AdminView() {
         return <CourseManagment/>
       case '/CourseManagement/addassigmentcourse':
         return <CourseAssignmentForm/>
-        
+        case '/ExamsResults':
+          return <ExamTable/>
+        case "/Users":
+          return <Display/>
+        case '/':
+          return <SemesterSectionDemo/>
+      
         default:
           console.log("router not specified")
     }
@@ -215,6 +230,9 @@ function AdminView() {
       case 'Add Semester':
         setOpenSemesterDialog(true)
         break
+      case'Schedule Exam':
+      setAddExamDialogOpen(true)
+      break
         default:console.log("no action like this")
      }
  }
@@ -232,6 +250,20 @@ function AdminView() {
     }
       
    }
+
+   useEffect(() => {
+    const fetchData = async () => {
+    
+        const sem = await dispatch(getsemesters()).unwrap();
+        const deps = await dispatch(fetchDepartments()).unwrap();
+
+        setSemesters(sem);
+        setDepartments(deps);
+      
+    };
+
+    fetchData();
+  }, [dispatch]);
   return (
     
     
@@ -259,6 +291,12 @@ function AdminView() {
        <Dialogs_Component open={openDialogCompoent.status}  Close={setopenDialogCompoent} identifier={openDialogCompoent.identifier}/>
       <UserDialog open={openUserDialog} onClose={setOpenUserDialog}/>
       <AddSemesterDialog open={openSemesterDialog} onClose={setOpenSemesterDialog}/>
+       <AddExamDialog
+      open={AddExamDialogOpen}
+      onClose={() => setAddExamDialogOpen(false)}
+      semesters={semesters}
+      departments={departments}
+    />
         <SpeedDial
         ariaLabel="SpeedDial basic example"
         sx={{ position: 'absolute', bottom: 16, right: 16 }}

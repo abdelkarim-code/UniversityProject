@@ -117,7 +117,7 @@ import liulogo from "../../assets/liulogo.png";
             Login
           </Button>
 
-          <Button
+          {/* <Button
             variant="text"
             sx={{
               color: "#003C64",
@@ -128,7 +128,7 @@ import liulogo from "../../assets/liulogo.png";
             }}
           >
             Forgot Password?
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
 

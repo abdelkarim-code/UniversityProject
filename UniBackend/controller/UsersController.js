@@ -65,13 +65,34 @@ userRoute.get("/:id",async(req,res)=>{
     }
 })
 userRoute.get("/system/getstudentInfo/:id",async(req,res)=>{
+    
     const {id}=req.params
     try{
+        
      const userByID=await knex("users").where("users.user_id",id)
      .join("students","users.user_id","=","students.user_id")
      .join("departments","departments.department_id","=","students.department_id")
      .join("programs","programs.program_id","=","students.program_id")
      .select("users.*","students.*","programs.*","departments.*",{program_name:"programs.name"})
+     .first()
+     if(userByID){
+        return res.status(200).json(omit(userByID,["password_hash"]))
+     }else{
+        return res.status(404).json({err:"not found"})
+     }
+    }catch(err){
+      return res.status(500).json(err)
+    }
+})
+userRoute.get("/system/getdoctorInfo/:id",async(req,res)=>{
+    
+    const {id}=req.params
+    try{
+        
+     const userByID=await knex("users").where("users.user_id",id)
+     .join("doctors","users.user_id","=","doctors.user_id")
+     .join("departments","departments.department_id","=","doctors.department_id")
+     .select("users.*","doctors.*","departments.*")
      .first()
      if(userByID){
         return res.status(200).json(omit(userByID,["password_hash"]))

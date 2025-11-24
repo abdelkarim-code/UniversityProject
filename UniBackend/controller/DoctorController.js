@@ -68,4 +68,55 @@ doctorRoute.delete("/:doctor_id",async(req,res)=>{
       return res.status(500).json(err)
     }
 })
+doctorRoute.get("/getAssignDoctorCourses/:doctorid/:semesterid",async(req,res)=>{
+   //#  student_id, course_id, , assignment_id, semester
+
+   if(Object.keys(req.params).length>0){
+    const {doctorid,semesterid}=req.params
+  try{
+      const register=await knex("course_assignments").where("course_assignments.doctor_id",doctorid)
+      .andWhere("course_assignments.semester",semesterid)
+      .join("courses","course_assignments.course_id","=","courses.course_id")
+      .join("rooms","course_assignments.room_id","=","rooms.id")
+      .select("course_assignments.*","courses.name as course_name"
+      ,"rooms.room_number","courses.code as course_code","courses.credit_hours as credit") 
+       return res.status(201).json(register)
+ 
+}catch(err){
+      return res.status(500).json(err)
+    }
+}else{
+    return res.status(500).json({err:"no  parameter founded"})
+}
+})
+doctorRoute.get("/:year", async (req, res) => {
+  const { year } = req.params; // e.g., /doctors/2025
+
+  try {
+    const doctors = await knex("doctors as d")
+      .join("users as u", "d.user_id", "u.user_id")
+      .join("departments as dep", "d.department_id", "dep.department_id")
+      .select(
+        "d.doctor_id",
+        "d.employee_code",
+        "d.specialization",
+        "d.Active",
+        "u.first_name",
+        "u.last_name",
+        "u.email",
+        "u.phone",
+        "u.address",
+        "u.gender",
+        "u.date_created",
+        "dep.name as department_name"
+      )
+      .whereRaw("YEAR(u.date_created) = ?", [year])
+      .orderBy("u.date_created", "desc");
+
+    return res.status(200).json(doctors);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 module.exports=doctorRoute

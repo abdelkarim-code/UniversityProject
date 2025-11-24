@@ -13,7 +13,10 @@ import Doctor_Home_page from "./component/Doctor/Doctor_Home_page";
 import NOTFOUND from "./component/NotFound";
 import Main_Panel from "./component/Student/sections/Main_Panel";
 import Registration from "./component/Student/sections/Registration";
-
+import CourseDescriptionPage from "./component/Student/sections/CourseDescriptionPage";
+import { ConfirmProvider } from 'material-ui-confirm';
+import ExamsView from "./component/Student/sections/ExamsView";
+import ClassesView from "./component/Student/sections/ClassesView";
 const theme = createTheme({
   typography: {
     fontFamily: '"Playfair Display", serif',
@@ -24,6 +27,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+      <ConfirmProvider>
       <Provider store={store}>
 
      
@@ -38,6 +42,9 @@ function App() {
       <Route path="/Liu/students/*" element={<Student_Home_page/>}>
                <Route index element={<Main_Panel  sx={{ zIndex: 11 }}/>}/>
               <Route path="Registration" element={<Registration/>}/>
+              <Route path="CourseDescription" element={<CourseDescriptionPage/>}/>
+              <Route path="ViewExams" element={<ExamsView/>}/>
+              <Route path="Classes" element={<ClassesView/>}/>
               
       </Route>
 
@@ -46,7 +53,7 @@ function App() {
     </Routes>
       </AlertProvider>
        </Provider>
-     
+       </ConfirmProvider>
     </ThemeProvider>
   )
 }

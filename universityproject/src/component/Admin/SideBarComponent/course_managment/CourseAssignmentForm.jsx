@@ -58,7 +58,7 @@ export default function CourseAssignmentForm() {
  const [loading,setloading]=useState(false)
  const alert=useAlert()
  const {departments}=useSelector(state=>state.department)
-
+const [selectedCampus,setSelectedCampus]=useState("")
  const courseState=useSelector(state=>state.course)
  const doctorState=useSelector(state=>state.doctor)
  const {semesters}=useSelector(state=>state.semester)
@@ -113,14 +113,18 @@ useEffect(()=>{
    if(courseState.status==201){
     setview("choice")
     alert.setopen({state:true,message:"Course assign successfully",color:"success"})
+  }else if(courseState.status==409){
+    alert.setopen({state:true,message:courseState?.message,color:"error"})
   }
-},[courseState.status])
+},[courseState.status,courseState?.message])
+
+
  const handleSubmit = async(event) => {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
        const Data=Object.fromEntries(formData.entries())
        
-     
+     console.log(campuses)
        if(Data?.room_id){
         
         const room_id=rooms.find((r)=>r.room_number==Data.room_id)?.id
@@ -131,7 +135,7 @@ useEffect(()=>{
       const semester=semesters.find(op=>op?.name+" "+op?.academic_year.trim()==Data.semester.trim())?.semester_id
       
       dispatch(AssignCourseToDoctor({room_id,course_id,doctor_id,schedule_time
-                                     ,semester:semester,section:Data?.section}))
+                                     ,semester:semester,section:Data?.section,campus:selectedCampus}))
 
 
        }else{
@@ -296,6 +300,7 @@ useEffect(()=>{
          key="first_combo"
          onChange={(_,value)=>{
          if(value&&value!="")
+          setSelectedCampus(value.trim())
           dispatch(fetchBlocks(value.trim()))
          }}
         
@@ -316,8 +321,8 @@ useEffect(()=>{
          options={blocks.map(block=>block.block)}
          key="second_combo"
          onChange={(_,value)=>{
-          if(value&&value!="")
-           dispatch(fetchRooms(value?.trim()))
+          if(value&&value!=""&&selectedCampus)
+           dispatch(fetchRooms({block:value?.trim(),campus:selectedCampus}))
          }}
       
         renderInput={(params)=>(

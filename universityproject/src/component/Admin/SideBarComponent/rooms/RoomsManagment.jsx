@@ -158,8 +158,15 @@ if(status==201){
                 backgroundColor: "warning.main",
                 '&:hover': {
                   backgroundColor: "warning.dark",
-                }
+                },
+                '&.Mui-disabled': {
+                      backgroundColor: '#ccc',
+                      color: '#555',
+                      borderRadius: '10px',
+                      cursor: 'not-allowed'
+                    }
               }}
+              disabled={blocks.length==0}
                onClick={()=>dispatch(createRooms(requestData))}
             >
               Submit
@@ -170,7 +177,9 @@ if(status==201){
       </FormAppBar>
 
       <CardContent sx={{ p: 4 }}>
-        {/* Form Section */}
+        {section=="add"&&(
+          <>
+            {/* Form Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" fontWeight="600" color="primary" sx={{ mb: 3 }}>
             Campus name
@@ -349,6 +358,19 @@ if(status==201){
                                   Add Block
                 </AddButton>
         </Box>
+           
+          
+          
+          
+          
+          </>
+
+
+        )}
+        {section=="view"&&(
+          <RoomsViewComponent/>
+        )}
+      
       </CardContent>
     </DashboardCard>
   );

@@ -12,16 +12,34 @@ import { useEffect, useState } from 'react';
 import { MenuItem, Select,Box, FormControl, InputLabel } from '@mui/material';
 import { createDepartment,fetchDepartments,createProgram,fetchProgramsByDepartment } from '../redux/Slices/DepartmentSlice';
 import { addCourse } from '../redux/Slices/CourseSlice';
-
+const courseCategories = [
+  'major',
+  'major_elective',
+  'remedial',
+  'lab',
+  'graduation_project'
+];
 function Dialogs_Component({open,Close,identifier=""}) {
     const {setopen}=useAlert()
     const {isloading,status,faculties}=useSelector((state)=>state.faculty)
     const department=useSelector((state)=>state.department)
     const course=useSelector((state)=>state.course)
+    const [category, setCategory] = useState('');
+    
    const [facultyId,setfacultyId]=useState(0)
    const [departmentname,setdepartmentname]=useState("")
    const dispatch=useDispatch()
-    
+   const  computeValueBasedOnCategory=()=>{
+     if(category!=""){
+         if(category=='remedial'){
+          return 4
+         }else if(category=='lab'){
+          return 1
+         }
+         return 3
+     }
+     return 0
+   }
 useEffect(()=>{
     //faculty
   if(Number(status)==201&&identifier=="Faculities"){
@@ -49,6 +67,7 @@ useEffect(()=>{
     setopen({state:true,message:"Duplicate entry detected — please use a different course name or code",color:"error"})
   }
 },[status,department.status,course.status])
+
 useEffect(()=>{
   
 if(identifier=="programs"||identifier=="Courses"){
@@ -71,9 +90,9 @@ if(identifier=="programs"||identifier=="Courses"){
         const ProgramData=Object.fromEntries(formData.entries())
         dispatch(createProgram(ProgramData))
     }else if(identifier=="Courses"){
-        
+         
         const CourseData=Object.fromEntries(formData.entries())
-        
+         
        
         if(CourseData?.program_id){
             dispatch(addCourse(CourseData))
@@ -429,17 +448,36 @@ if(identifier=="programs"||identifier=="Courses"){
                                                 htmlInput: { pattern: "\\d+", title: "Level must be a number" }
                                               }}
                                             />
-
+                                             <TextField
+                                              name="course_category"
+                                              label="Course Category"
+                                              margin="dense"
+                                              fullWidth
+                                              variant="standard"
+                                              required
+                                              select
+                                              onChange={(e)=>setCategory(e.target.value)}
+                                              key={departmentname}
+                                            >
+                                              {departmentname!=8?courseCategories.map((c,index)=>(
+                                                <MenuItem key={index} value={c}>{c}</MenuItem>
+                                              )):["elective"].map((c,index)=>(
+                                                <MenuItem key={index} value={c}>{c}</MenuItem>
+                                              ))}
+                                              
+                                            </TextField>
                                             <TextField
                                               name="credit_hours"
                                               label="Credit Hours"
                                               margin="dense"
                                               fullWidth
                                               variant="standard"
-                                              required
-                                              slotProps={{
-                                                htmlInput: { pattern: "\\d+(\\.\\d{1,2})?", title: "Enter a valid number" }
+                                              value={computeValueBasedOnCategory()}
+                                                 slotProps={{
+                                                htmlInput: { readOnly:true }
                                               }}
+                                              required
+                                              helperText="This value is computed and cannot be edited"
                                             />
 
                                             <TextField

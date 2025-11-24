@@ -12,19 +12,39 @@ import {
 import { AccountCircle } from "@mui/icons-material";
 import liulogo from "../../assets/liulogo.png";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Logout } from "../redux/Slices/AuthSlice";
 
 const AppBarHeader = ({scroll}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const isMobile = useMediaQuery("(max-width:900px)");
   const nav=useNavigate()
-  
+  const dispatch=useDispatch()
 
 
   const handleAccountMenu = (event) => setAnchorEl(event.currentTarget);
-  const handleClose = () => setAnchorEl(null);
+  const handleClose =async() => {
+    
+    const req=await dispatch(Logout(true)).unwrap()
+    if(req?.status==200){
+     setAnchorEl(null)
+       nav("/Liu/Login")
+    }
+     
+  };
   const redirectToSection=(view)=>{
+    const based_route="/Liu/students/"
     if(view=="Registration"){
-      nav("Registration")
+      nav(`${based_route}Registration`)
+    }else if(view=="Course Description"){
+      nav(`${based_route}CourseDescription`)
+      
+    }else if(view=="Exams"){
+      nav(`${based_route}ViewExams`)
+      
+    }else if(view=="Classes"){
+      nav(`${based_route}Classes`)
+      
     }
   }
   const menuItems = [
@@ -34,7 +54,7 @@ const AppBarHeader = ({scroll}) => {
    
   ];
   const menuItems1=[
-     "Course offering",
+     "Exams",
     "GPA Calculator",
     "Course Description",
   ]
@@ -177,6 +197,7 @@ const AppBarHeader = ({scroll}) => {
                     transition: "0.2s",
                     "&:hover": { color: "#fdd835" },
                   }}
+                   onClick={()=>redirectToSection(item)}
                 >
                   {item}
                 </Typography>
@@ -244,7 +265,7 @@ const AppBarHeader = ({scroll}) => {
                 },
               }}
             >
-              <MenuItem onClick={handleClose}>Change Password</MenuItem>
+              <MenuItem >Change Password</MenuItem>
               <MenuItem onClick={handleClose}>Logout</MenuItem>
             </Menu>
           </Box>

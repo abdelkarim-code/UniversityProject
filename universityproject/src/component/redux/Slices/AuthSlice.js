@@ -22,7 +22,9 @@ export const UserLogin = createAsyncThunk(
       if(response.status==200){
         const path=response.data.user_role=="Student"?"/Liu/students":"/Liu/doctors"
         if(response.data.user_role=="Student"){
-          dispatch(getActiveUserInfo(response.data.user_id))
+          dispatch(getActiveUserInfo({userid:response.data.user_id,type:"getstudentInfo"}))
+        }else if(response.data.user_role=="Doctor"){
+          dispatch(getActiveUserInfo({userid:response.data.user_id,type:"getdoctorInfo"}))
         }
         return {path:path,status:response.status}
       }
@@ -40,17 +42,49 @@ export const UserLogin = createAsyncThunk(
 );
 export const getActiveUserInfo = createAsyncThunk(
   "auth/getStudentInfo",
-  async (userid, { rejectWithValue }) => {
+  async ({userid,type}, { rejectWithValue }) => {
     
    try {
-      const response = await axios.get(`${base_url}/users/system/getstudentInfo/${userid}`);
-        localStorage.setItem("user_id",response.data?.user_id)
+      const response = await axios.get(`${base_url}/users/system/${type}/${userid}`);
+        
       if(response.status==200){
        return response.data
       }
       
     } catch (err) {
       return rejectWithValue({ status: err.response?.status || 500 });
+    }
+  }
+);
+export const CheckTokenValidation = createAsyncThunk(
+  "auth/CheckTokenValidation",
+  async (s_or_d) => {
+    
+   try {
+      const response = await axios.get(`${base_url}/users/Login/checkToken/${s_or_d}`,{ withCredentials: true });
+        
+      if(response.status==200){
+       return {status:response.status,user_info:response.data?.user_info}
+      }
+      
+    } catch (err) {
+      return {status:err.response.status}
+    }
+  }
+);
+export const Logout = createAsyncThunk(
+  "auth/Logout",
+  async (s_or_d) => {
+    console.log(s_or_d)
+   try {
+      const response = await axios.get(`${base_url}/users/Login/Logout/${s_or_d}`,{ withCredentials: true });
+        
+      if(response.status==200){
+       return {status:response.status}
+      }
+      
+    } catch (err) {
+      return {status:err.response.status}
     }
   }
 );

@@ -12,11 +12,13 @@ const initialState={
 //===========thunks funtions
 export const createDepartment = createAsyncThunk(
   "Department/create",
-  async ({code,description,name,faculty_id}, { rejectWithValue }) => {
+  async ({code,description,name,faculty_id}, { rejectWithValue,dispatch }) => {
     console.log("from thunk data: ",name,faculty_id)
     
     try {
       const response = await axios.post(`${base_url}/departments/${Number(faculty_id)}/faculties`, {name,code,description});
+      if(response.status==201)
+        dispatch(fetchDepartmentByFaculty(faculty_id))
       return response.status
     } catch (err) {
       

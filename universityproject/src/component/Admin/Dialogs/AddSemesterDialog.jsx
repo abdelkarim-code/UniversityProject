@@ -10,12 +10,12 @@ import {
   Autocomplete
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { addsemester } from '../redux/Slices/SemesterSlice';
-import { useAlert } from '../../context';
+import { addsemester } from '../../redux/Slices/SemesterSlice';
+import { useAlert } from '../../../context';
 
 export default function AddSemesterDialog({ open, onClose }) {
   const dispatch=useDispatch()
-  const {status}=useSelector(state=>state.semester)
+  const {status,message}=useSelector(state=>state.semester)
   const alert=useAlert()
   const handleSubmit = async(event) => {
         event.preventDefault();
@@ -28,7 +28,7 @@ export default function AddSemesterDialog({ open, onClose }) {
             onClose(false)
            alert.setopen({state:true,message:"A new semester is added successfully",color:"success"})
           }else if(status==409){
-            alert.setopen({state:true,message:"Duplicated data detected-this semester already exit!!!",color:"error"})
+            alert.setopen({state:true,message:message,color:"error"})
           }
       },[status])
   return (

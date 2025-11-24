@@ -3,6 +3,9 @@ import { Card, CardContent, Box, Grid, Typography } from '@mui/material';
 import { Star, School, CalendarToday, Assignment } from '@mui/icons-material';
 
 const StudentInfoCard = ({ studentData }) => {
+  const reFormulateName=(name)=>{
+    return name?name.includes("of")?name.split("of")[1]:name:""
+  }
   return (
     <Box
       sx={{
@@ -13,6 +16,7 @@ const StudentInfoCard = ({ studentData }) => {
         mb:0,
         mt:0.2
       }}
+      key={new Date().getMilliseconds()}
     >
       <Card
         sx={{
@@ -102,19 +106,20 @@ const StudentInfoCard = ({ studentData }) => {
                     fontSize: '0.7rem'
                   }}
                 >
-                  Department
+                  Department of
                 </Typography>
               </Box>
               <Typography
                 variant="body2"
+                
                 sx={{
                   color: '#003C64',
                   fontWeight: 600,
                   pl: 2.5,
-                  fontSize: '0.9rem'
+                  fontSize: '0.8rem'
                 }}
               >
-                {studentData?.name}
+                {reFormulateName(studentData?.name)}
               </Typography>
             </Grid>
 

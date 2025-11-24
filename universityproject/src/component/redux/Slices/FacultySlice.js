@@ -12,9 +12,12 @@ const initialState={
 //===========thunks funtions
 export const createFaculty = createAsyncThunk(
   "faculty/create",
-  async ({ name, description }, { rejectWithValue }) => {
+  async ({ name, description }, { rejectWithValue,dispatch }) => {
     try {
       const response = await axios.post(`${base_url}/faculties`, { name, description });
+      if(response.status==201){
+        dispatch(fetchFaculties())
+      }
       return response.status
     } catch (err) {
       

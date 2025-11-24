@@ -1,37 +1,14 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Button,
-  Chip,
-   Grid,
-  
-  useTheme,
-  useMediaQuery,
-  Stack,
-  Avatar,
-  Tooltip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tab,
-  Tabs,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  styled,
+import  { useEffect, useState } from 'react';
+import {Box,Typography,AccordionDetails,Chip, Grid,useTheme,useMediaQuery,Stack,Tooltip,IconButton,Dialog,DialogTitle,DialogContent,
+DialogActions,
+ CardContent,
+ Select,
+ MenuItem,
+ Paper,
+ ListItem,
+ List,
+
+ 
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -44,237 +21,148 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
+  Description,
 } from '@mui/icons-material';
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useDispatch, useSelector } from 'react-redux';
+import { getAvailableCourses, getSections } from '../../redux/Slices/Student_Course_registration_Slice';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import { yellow } from '@mui/material/colors';
+import DetailsSnackbar from '../DetailsSnackbar';
+import {
+  PageContainer,
+  SectionPaper,
+  SectionHeader,
+  SectionTitle,
+  CourseAccordion,
+  CourseHeader,
+  CourseChip,
+  StatusChip,
+  PrimaryButton,
+  SecondaryButton,
+  ConflictAlert,
+  InfoRow,
+  CompactCourseCard,
+ 
+} from '../styled/registration_styled';
+import PageviewIcon from '@mui/icons-material/Pageview';
+import NOTFOUND from '../../NotFound';
+import moment from 'moment';
+import { fetchCampuses } from '../../redux/Slices/RoomSlice';
+import { registerCourseBystudent } from '../../redux/Slices/StudentSlice';
+import { getStudentRegiteredCourses } from '../../redux/Slices/Student_Course_registration_Slice';
 
-// Styled components using Material-UI styled API
-const PageContainer = styled(Container)(({ theme }) => ({
-  paddingTop: theme.spacing(6),
-  paddingBottom: theme.spacing(4),
-  minHeight: 'calc(100vh - 64px)',
-}));
-
-const SectionPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  height: 'fit-content',
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 12px rgba(0, 60, 100, 0.1)',
-}));
-
-const SectionHeader = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  paddingBottom: theme.spacing(2),
-  borderBottom: `2px solid #fdd835`,
-}));
-
-const SectionTitle = styled(Typography)(() => ({
-  color: '#003C64',
-  fontWeight: 700,
-  fontSize: '1.5rem',
-}));
-
-const CourseAccordion = styled(Accordion)(({ theme, hasConflict }) => ({
-  borderRadius: theme.spacing(1),
-  marginBottom: theme.spacing(1),
-  border: hasConflict ? `2px solid ${theme.palette.error.main}` : 'none',
-  '&:before': {
-    display: 'none',
-  },
-  '&.Mui-expanded': {
-    marginBottom: theme.spacing(1),
-  },
-}));
-
-const CourseHeader = styled(AccordionSummary)(({ theme }) => ({
-  backgroundColor: 'rgba(0, 60, 100, 0.02)',
-  borderRadius: theme.spacing(1),
-  '&.Mui-expanded': {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-}));
-
-const CourseChip = styled(Chip)(() => ({
-  backgroundColor: '#003C64',
-  color: '#FFFFFF',
-  fontWeight: 600,
-  fontSize: '0.7rem',
-}));
-
-const StatusChip = styled(Chip)(({  status }) => {
-  const statusConfig = {
-    enrollment: { background: '#4caf50', color: '#ffffff' },
-    drop: { background: '#f44336', color: '#ffffff' },
-    completed: { background: '#2196f3', color: '#ffffff' },
-  };
-  const config = statusConfig[status] || statusConfig.enrollment;
-  
-  return {
-    backgroundColor: config.background,
-    color: config.color,
-    fontWeight: 700,
-    fontSize: '0.7rem',
-  };
-});
-
-const PrimaryButton = styled(Button)(({ theme }) => ({
-  backgroundColor: '#fdd835',
-  color: '#003C64',
-  fontWeight: 700,
-  padding: theme.spacing(1, 3),
-  borderRadius: theme.spacing(1),
-  '&:hover': {
-    backgroundColor: '#fbc02d',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 8px rgba(253, 216, 53, 0.3)',
-  },
-}));
-
-const SecondaryButton = styled(Button)(({ theme }) => ({
-  borderColor: '#003C64',
-  color: '#003C64',
-  fontWeight: 600,
-  padding: theme.spacing(0.75, 2),
-  borderRadius: theme.spacing(1),
-}));
-
-const ConflictAlert = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: theme.palette.error.light,
-  color: theme.palette.error.contrastText,
-  padding: theme.spacing(1, 2),
-  borderRadius: theme.spacing(1),
-  marginTop: theme.spacing(1),
-  fontSize: '0.875rem',
-  fontWeight: 600,
-}));
-
-const InfoRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  marginBottom: theme.spacing(1),
-  color: theme.palette.text.secondary,
-}));
-
-const CompactCourseCard = styled(Card)(({ theme }) => ({
-  cursor: 'pointer',
-  transition: 'all 0.2s ease-in-out',
-  border: `1px solid ${theme.palette.divider}`,
-  '&:hover': {
-    borderColor: '#003C64',
-    boxShadow: '0 4px 12px rgba(0, 60, 100, 0.15)',
-  },
-}));
-
-// Demo data
-const availableCourses = [
-  {
-    id: 1,
-    course_name: 'Introduction to Computer Science',
-    doctor_name: 'Dr. Sarah Johnson',
-    section: 'CS-101-A',
-    schedule_time: 'Mon, Wed 10:00 AM - 11:30 AM',
-    room_number: 'SCI-201',
-    department: 'Computer Science',
-    faculty: 'Faculty of Engineering',
-    credits: 3,
-    available_seats: 15,
-    hasConflict: false,
-    course_code: 'CS101',
-  },
-  {
-    id: 2,
-    course_name: 'Advanced Mathematics',
-    doctor_name: 'Dr. Michael Chen',
-    section: 'MATH-202-B',
-    schedule_time: 'Tue, Thu 2:00 PM - 3:30 PM',
-    room_number: 'MATH-105',
-    department: 'Mathematics',
-    faculty: 'Faculty of Science',
-    credits: 4,
-    available_seats: 8,
-    hasConflict: true,
-    course_code: 'MATH202',
-  },
-];
-
-const registeredCourses = [
-  {
-    id: 101,
-    course_name: 'Data Structures and Algorithms',
-    semester: 'Fall 2024',
-    grade: 'A-',
-    status: 'enrollment',
-    credits: 4,
-    instructor: 'Dr. James Wilson',
-    course_code: 'CS201',
-  },
-  {
-    id: 102,
-    course_name: 'Introduction to Psychology',
-    semester: 'Spring 2024',
-    grade: 'A',
-    status: 'completed',
-    credits: 3,
-    instructor: 'Dr. Robert Kim',
-    course_code: 'PSY101',
-  },
-];
 
 const Registration = () => {
   const theme = useTheme();
+  const location=useLocation()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [viewMode, setViewMode] = useState('accordion'); // 'accordion' or 'table'
+  const [openDetails,setOpenDetails]=useState({type:"",name:"",code:"",description:"",open:false})
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [sectionDialogOpen, setDetailDialogOpen] = useState(false);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
-
+  const dispatch=useDispatch()
+  const {active_user}=useSelector(state=>state.auth)
+  const {available_courses,sections,reg_courses:registeredCourses}=useSelector(state=>state.cou_reg)
+  const current_semester=useOutletContext()
+  const {campuses}=useSelector(state=>state.room)
+     
+  const getAvailableCoursesToDisplay=()=>{
+     const {department_id,program_id,student_id,current_year}=active_user
+       const {semester_id}=current_semester
+      dispatch(getAvailableCourses({
+        department_id,program_id,student_id,
+        level:current_year,
+        semester_id
+      }))
+      dispatch(getStudentRegiteredCourses({student_id,semester_id}))
+  }
+  useEffect(()=>{
+   if(active_user&&Object.keys(active_user).length>0&&current_semester){
+      getAvailableCoursesToDisplay()
+     
+    }
+     
+  },[location,active_user,current_semester])
+  
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpandedAccordion(isExpanded ? panel : null);
   };
 
-  const handleViewCourseDetails = (course) => {
+  const handleViewSections = async(course) => {
+    const {semester_id}=current_semester
     setSelectedCourse(course);
     setDetailDialogOpen(true);
+     const campuses=await dispatch(fetchCampuses()).unwrap()
+     if(campuses.length>0)
+       dispatch(getSections({course_id:course?.course_id,campus:campuses[0].campus||"",semester_id}))
   };
+  const handleRefetchSection=(campus)=>{
+    console.log(campus)
+    if(selectedCourse){
+          const {semester_id}=current_semester
+  dispatch(getSections({course_id:selectedCourse?.course_id,campus:campus,semester_id}))
+    }
+ 
+  }
+  function addTime(time, h, m) {
+  return moment(time, "HH:mm")
+    .add(h, "hours")
+    .add(m, "minutes")
+    .format("HH:mm");
+}
 
-  const handleRegisterCourse = (course) => {
-    // Registration logic would go here
-    console.log('Registering course:', course);
-  };
+  const handleRegisterCourse = async(course) => {
+    try{
+       if(active_user&&current_semester){
+          const {student_id}=active_user
+          const {semester_id:semester}=current_semester
+         const request=await dispatch(registerCourseBystudent({student_id,semester,assignment_id:course?.assignment_id,
+            course_id:selectedCourse?.course_id})).unwrap()
+            console.log(request)
+            if(request==201){
+               setDetailDialogOpen(false);
+               getAvailableCoursesToDisplay()
+            }
+        }
+    }catch(err){
+      console.log(err)
+    }
+  }
+         
+    
 
-  const handleDropCourse = (course) => {
-    // Drop course logic would go here
-    console.log('Dropping course:', course);
-  };
-
+ 
   const renderAvailableCoursesAccordion = () => (
     <Box>
-      {availableCourses.map((course) => (
+      {available_courses?.length>0?available_courses.map((course,index) => (
         <CourseAccordion
-          key={course.id}
-          expanded={expandedAccordion === `course-${course.id}`}
-          onChange={handleAccordionChange(`course-${course.id}`)}
-          hasConflict={course.hasConflict}
+          key={index}
+          
+          expanded={expandedAccordion === `course-${course.assignment_id}`}
+          onChange={handleAccordionChange(`course-${course.assignment_id}`)}
+          // hasConflict={course.hasConflict}
         >
-          <CourseHeader expandIcon={<ExpandMoreIcon />}>
+          <CourseHeader expandIcon={<ExpandMoreIcon  />}>
             <Stack width="100%" spacing={1}>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start">
                 <Box flex={1}>
                   <Typography variant="h6" sx={{ color: '#003C64', fontWeight: 600 }}>
-                    {course.course_name}
+                    {course?.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {course.course_code} • {course.doctor_name}
+                    {course?.code}
                   </Typography>
+                  <Tooltip title="View Details">
+                
+                  
+             
+              </Tooltip>
                 </Box>
-                <CourseChip label={course.section} size="small" />
+                  
               </Box>
               
-              <Box display="flex" gap={2} flexWrap="wrap">
+              {/* <Box display="flex" gap={2} flexWrap="wrap">
                 <InfoRow>
                   <ScheduleIcon fontSize="small" />
                   <Typography variant="body2">{course.schedule_time}</Typography>
@@ -283,14 +171,14 @@ const Registration = () => {
                   <LocationIcon fontSize="small" />
                   <Typography variant="body2">{course.room_number}</Typography>
                 </InfoRow>
-              </Box>
+              </Box> */}
 
-              {course.hasConflict && (
+              {/* {course.hasConflict && (
                 <ConflictAlert>
                   <WarningIcon fontSize="small" />
                   <Typography variant="body2">Time conflict with registered course</Typography>
                 </ConflictAlert>
-              )}
+              )} */}
             </Stack>
           </CourseHeader>
           
@@ -301,9 +189,20 @@ const Registration = () => {
                   Course Information
                 </Typography>
                 <Stack spacing={1}>
-                  <Typography variant="body2"><strong>Department:</strong> {course.department}</Typography>
-                  <Typography variant="body2"><strong>Faculty:</strong> {course.faculty}</Typography>
-                  <Typography variant="body2"><strong>Credits:</strong> {course.credits}</Typography>
+                  <Typography variant="body2"><strong>Department:</strong> <Typography component={"span"} sx={{cursor:"pointer",textDecoration:"underline",fontWeight:100,fontSize:14,color:yellow[900]}} 
+                   onClick={()=>setOpenDetails({type:"det",name:course?.department_name,code:course?.department_code,
+                  description:course.department_des,open:true})}
+                  
+                  
+                  >{course?.department_name}</Typography></Typography>
+                  <Typography variant="body2"><strong>Faculty:</strong> {course?.faculty_name}</Typography>
+                  <Typography variant="body2"><strong>Credits:</strong> {course?.credit_hours}</Typography>
+                 <Tooltip title={"Course details"}>
+                   <InfoOutlinedIcon sx={{mt:1,color:yellow[900],ml:0,cursor:"pointer"}}
+                  onClick={()=>setOpenDetails({type:"course",name:course?.name,code:course?.code,
+                  description:course.description,open:true})}/>
+                  
+                  </Tooltip> 
                 </Stack>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
@@ -312,120 +211,55 @@ const Registration = () => {
                 </Typography>
                 <Stack spacing={1}>
                   <Typography variant="body2"><strong>Available Seats:</strong> {course.available_seats}</Typography>
-                  <Typography variant="body2"><strong>Section:</strong> {course.section}</Typography>
+                
                   <PrimaryButton
-                    startIcon={<AddIcon />}
-                    onClick={() => handleRegisterCourse(course)}
-                    disabled={course.hasConflict}
+                    startIcon={<PageviewIcon />}
+                    onClick={() => handleViewSections(course)}
                     fullWidth={isMobile}
                   >
-                    Register Course
+                    View available sections
                   </PrimaryButton>
                 </Stack>
               </Grid>
             </Grid>
           </AccordionDetails>
         </CourseAccordion>
-      ))}
+      )):<NOTFOUND message={"It looks like there are no courses being offered currently."}/>}
     </Box>
   );
 
-  const renderAvailableCoursesTable = () => (
-    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-      <Table>
-        <TableHead sx={{ backgroundColor: 'rgba(0, 60, 100, 0.04)' }}>
-          <TableRow>
-            <TableCell sx={{ fontWeight: 600, color: '#003C64' }}>Course</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#003C64' }}>Instructor</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#003C64' }}>Schedule</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#003C64' }}>Section</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#003C64' }}>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {availableCourses.map((course) => (
-            <TableRow key={course.id} hover>
-              <TableCell>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ color: '#003C64', fontWeight: 600 }}>
-                    {course.course_name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {course.course_code}
-                  </Typography>
-                </Box>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2">{course.doctor_name}</Typography>
-              </TableCell>
-              <TableCell>
-                <Box>
-                  <Typography variant="body2">{course.schedule_time}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {course.room_number}
-                  </Typography>
-                </Box>
-              </TableCell>
-              <TableCell>
-                <CourseChip label={course.section} size="small" />
-              </TableCell>
-              <TableCell>
-                <Stack direction="row" spacing={1}>
-                  <Tooltip title="View Details">
-                    <IconButton size="small" onClick={() => handleViewCourseDetails(course)}>
-                      <VisibilityIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <PrimaryButton
-                    size="small"
-                    startIcon={<AddIcon />}
-                    onClick={() => handleRegisterCourse(course)}
-                    disabled={course.hasConflict}
-                  >
-                    Register
-                  </PrimaryButton>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+  
 
   const renderRegisteredCourses = () => (
     <Stack spacing={2} >
-      {registeredCourses.map((course) => (
-        <CompactCourseCard key={course.id} variant="outlined">
+      {(registeredCourses&&registeredCourses.length>0)?registeredCourses.map((course) => (
+        <CompactCourseCard key={course?.registration_id} variant="outlined">
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
               <Box flex={1}>
                 <Typography variant="h6" sx={{ color: '#003C64', fontWeight: 600, mb: 0.5 }}>
-                  {course.course_name}
+                  {course?.course_name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  {course.course_code} • {course.instructor}
+                  {course?.course_code} • {course?.doctor_name}
                 </Typography>
                 <Box display="flex" gap={1} flexWrap="wrap">
-                  <StatusChip label={course.status.toUpperCase()} status={course.status} size="small" />
-                  <Chip label={course.semester} variant="outlined" size="small" />
-                  {course.status === 'completed' && (
-                    <Chip label={`Grade: ${course.grade}`} color="primary" variant="outlined" size="small" />
-                  )}
+                  <StatusChip label={course?.status.toUpperCase()} status={course.status} size="small" />
+                  
                 </Box>
               </Box>
-              <Tooltip title="View Details">
-                <IconButton size="small" onClick={() => handleViewCourseDetails(course)}>
+              {/* <Tooltip title="View Details">
+                <IconButton size="small" onClick={() => handleViewSections(course)}>
                   <InfoIcon fontSize="small" />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
             
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="body2" color="text.secondary">
-                Credits: {course.credits}
+                Credits: {course.credit}
               </Typography>
-              {course.status === 'enrollment' && (
+              {/* {course.status === 'enrolled' && (
                 <SecondaryButton
                   startIcon={<DeleteIcon />}
                   onClick={() => handleDropCourse(course)}
@@ -433,45 +267,25 @@ const Registration = () => {
                 >
                   Drop Course
                 </SecondaryButton>
-              )}
+              )} */}
             </Box>
           </CardContent>
         </CompactCourseCard>
-      ))}
+      )):<NOTFOUND message={"You haven’t registered for any courses yet."}/>}
     </Stack>
   );
+const detailsProps = {
+  openDetails,
+  onClose: () => setOpenDetails({type:"",name:"",code:"",description:"",open:false})
+};
 
   return (
     <PageContainer sx={{paddingTop:10}} maxWidth={"xl"} >
-      {/* View Mode Tabs */}
-      <Box mb={4} mt={2}>
-        <Tabs
-          value={viewMode}
-          onChange={(e, newValue) => setViewMode(newValue)}
-          
-          sx={{
-            '& .MuiTab-root': {
-              fontWeight: 600,
-              color: '#003C64',
-            },
-            '& .Mui-selected': {
-              color: '#fdd835',
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#fdd835',
-            },
-            color:yellow[800],
-           
-          }}
-        >
-          <Tab label="Accordion View" value="accordion" />
-          <Tab label="Table View" value="table" />
-        </Tabs>
-      </Box>
+     
 
       <Grid container spacing={2}>
         {/* Available Courses Section */}
-        <Grid size={6}>
+        <Grid size={!isMobile?6:12}>
           <SectionPaper>
             <SectionHeader>
               <SectionTitle variant="h4">
@@ -482,22 +296,21 @@ const Registration = () => {
               </Typography>
             </SectionHeader>
 
-            {viewMode === 'accordion' 
-              ? renderAvailableCoursesAccordion()
-              : renderAvailableCoursesTable()
-            }
+           {renderAvailableCoursesAccordion()}
+            
+            
           </SectionPaper>
         </Grid>
 
         {/* Registered Courses Section */}
-        <Grid size={6}>
+        <Grid size={!isMobile?6:12}>
           <SectionPaper>
             <SectionHeader>
               <SectionTitle variant="h4">
                 My Courses
               </SectionTitle>
               <Typography variant="body1" color="text.secondary">
-                Currently enrolled and completed courses
+                Currently enrolled courses
               </Typography>
             </SectionHeader>
 
@@ -505,78 +318,112 @@ const Registration = () => {
           </SectionPaper>
         </Grid>
       </Grid>
+      {/* {snakbar} */}
+        <DetailsSnackbar {...detailsProps}/>
 
-      {/* Course Detail Dialog */}
-      <Dialog
-        open={detailDialogOpen}
-        onClose={() => setDetailDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ backgroundColor: '#003C64', color: '#FFFFFF' }}>
-          <Typography variant="h6" fontWeight={600}>
-            Course Details
+
+      {/* Course Section Dialog */}
+<Dialog
+  open={sectionDialogOpen}
+  onClose={() => setDetailDialogOpen(false)}
+  maxWidth="lg"
+  fullWidth
+>
+  <DialogTitle sx={{ backgroundColor: '#003C64', color: '#FFFFFF' }}>
+    <Typography variant="h6" fontWeight={600}>
+      {selectedCourse?.name ||'Course Sections'}
+    </Typography>
+  </DialogTitle>
+
+  <DialogContent sx={{ pt: 3 }}>
+    {selectedCourse && (
+      <Stack spacing={3}>
+        {/* Campus Selection */}
+        <Stack direction="row" spacing={2} alignItems="center" >
+          <Typography variant="subtitle1" fontWeight={500}>
+            Select Campus:
           </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          {selectedCourse && (
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: '#003C64' }}>
-                  {selectedCourse.course_name}
+          <Select
+            value={campuses.length>0?campuses[0]?.campus:"Saida"}
+            onChange={(e) => handleRefetchSection(e.target.value)}
+            size="small"
+            sx={{position:"absolute",left:5,top:93,width:100}}
+            key={new Date().getMilliseconds()}
+            
+          >
+            {campuses.length>0?campuses.map((campus,index) => (
+              <MenuItem key={index} value={campus?.campus}>
+                {campus?.campus}
+              </MenuItem>
+            )):undefined}
+          </Select>
+        </Stack>
+
+        {/* Sections List */}
+       <Box sx={{ pt: 5, maxHeight: '60vh', overflowY: 'auto' }}>
+  {selectedCourse && sections.length > 0 ? (
+    <List>
+      {sections.map((section,index) => (
+        <ListItem key={index} sx={{ p: 0, mb: 2, display: 'block' }}>
+          <Paper sx={{ p: 2, border: '1px solid #ccc' }}>
+            <Typography variant="h6" sx={{ color: '#003C64' }}>
+              Section {section.section}
+            </Typography>
+
+            <Stack spacing={1} mt={1}>
+              <InfoRow>
+                <PersonIcon color="primary" />
+                <Typography variant="body1">{section?.employee_code.split(".")[0]+" "+section?.employee_code.split(".")[1]}</Typography>
+              </InfoRow>
+              <InfoRow>
+                <ScheduleIcon color="primary" />
+                <Typography variant="body1">{`${section?.schedule_time} To ${addTime(section?.schedule_time.split("-")[1],1,15)}`}</Typography>
+              </InfoRow>
+              <InfoRow>
+                <LocationIcon color="primary" />
+                <Typography variant="body1">{section.room_number}</Typography>
+              </InfoRow>
+              {section.available_seats !== undefined && (
+                <Typography variant="body1">
+                  <strong>Available Seats:</strong> 30
                 </Typography>
-                <Stack spacing={2}>
-                  <InfoRow>
-                    <PersonIcon color="primary" />
-                    <Typography variant="body1">{selectedCourse.doctor_name || selectedCourse.instructor}</Typography>
-                  </InfoRow>
-                  <InfoRow>
-                    <SchoolIcon color="primary" />
-                    <Typography variant="body1">{selectedCourse.department}</Typography>
-                  </InfoRow>
-                  <InfoRow>
-                    <ScheduleIcon color="primary" />
-                    <Typography variant="body1">{selectedCourse.schedule_time}</Typography>
-                  </InfoRow>
-                  <InfoRow>
-                    <LocationIcon color="primary" />
-                    <Typography variant="body1">{selectedCourse.room_number}</Typography>
-                  </InfoRow>
-                </Stack>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: '#003C64' }}>
-                  Additional Information
-                </Typography>
-                <Stack spacing={1}>
-                  <Typography variant="body1"><strong>Credits:</strong> {selectedCourse.credits}</Typography>
-                  <Typography variant="body1"><strong>Section:</strong> {selectedCourse.section}</Typography>
-                  <Typography variant="body1"><strong>Faculty:</strong> {selectedCourse.faculty}</Typography>
-                  {selectedCourse.available_seats !== undefined && (
-                    <Typography variant="body1">
-                      <strong>Available Seats:</strong> {selectedCourse.available_seats}
-                    </Typography>
-                  )}
-                </Stack>
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <SecondaryButton onClick={() => setDetailDialogOpen(false)}>
-            Close
-          </SecondaryButton>
-          {selectedCourse && !selectedCourse.status && (
-            <PrimaryButton
-              startIcon={<AddIcon />}
-              onClick={() => handleRegisterCourse(selectedCourse)}
-              disabled={selectedCourse.hasConflict}
-            >
-              Register Course
-            </PrimaryButton>
-          )}
-        </DialogActions>
-      </Dialog>
+              )}
+
+              {/* Conflict Alert */}
+              {/* {section?.hasConflict && (
+                <ConflictAlert>
+                  <WarningIcon fontSize="small" /> Conflict with another registered course
+                </ConflictAlert>
+              )} */}
+            </Stack>
+
+            <Stack mt={2} direction="row" spacing={1}>
+              <PrimaryButton
+                onClick={() => handleRegisterCourse(section)}
+                disabled={section.hasConflict || section.status || section.available_seats === 0}
+              >
+                Register in this Section
+              </PrimaryButton>
+            </Stack>
+          </Paper>
+        </ListItem>
+      ))}
+    </List>
+  ) : (
+    <Typography>No sections available for this campus.</Typography>
+  )}
+</Box>
+
+      </Stack>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ p: 3 }}>
+    <SecondaryButton onClick={() => setDetailDialogOpen(false)}>
+      Close
+    </SecondaryButton>
+  </DialogActions>
+</Dialog>
     </PageContainer>
   );
 };

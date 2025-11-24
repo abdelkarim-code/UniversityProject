@@ -5,7 +5,8 @@ import { base_url } from '../../../context';
 const initialState={
     doctors:[],
     isloading:false,
-    status:0
+    status:0,
+    ass_doc:[]
 }
 //===========thunks funtions
 // # user_id, first_name, last_name, email, password_hash, phone, address, gender, date_created, role
@@ -47,6 +48,33 @@ export const fetchDoctorsByDepartment = createAsyncThunk(
     }
   }
 );
+export const getAssignCoursesToDoctor = createAsyncThunk(
+  "doctor/getAssignCoursesToDoctor",
+  async ({doctor_id,semester_id},{ rejectWithValue }) => {
+    
+    try {
+      const response = await axios.get(`${base_url}/doctors/getAssignDoctorCourses/${doctor_id}/${semester_id}`);
+    
+      return response.data
+    } catch (err) {
+      console.log(err.message)
+      return rejectWithValue({ status: err});
+    }
+  }
+);
+
+export const fetchDoctorsByYear = createAsyncThunk(
+  "doctors/fetchByYear",
+  async (year, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${base_url}/doctors/${year}`);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || "Failed to fetch doctors");
+    }
+  }
+);
+
 //***************End thunks funtions
 const doctorslice = createSlice({
   name: 'doctor',
@@ -68,6 +96,8 @@ const doctorslice = createSlice({
       }).addCase(fetchDoctorsByDepartment.fulfilled,(state,action)=>{
        
        state.doctors=action.payload
+      }).addCase(getAssignCoursesToDoctor.fulfilled,(state,action)=>{
+        state.ass_doc=action.payload
       })
   }
   

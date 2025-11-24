@@ -4,12 +4,12 @@ import { yellow } from '@mui/material/colors';
 import { useOutletContext } from 'react-router-dom';
 
 // Demo data
-const student = {
- remainingCredits: 18,
-  totalCredits: 120,
-  gpa: 3.8,
-  attendance: "92%"
-};
+// const student = {
+//  remainingCredits: 18,
+//   totalCredits: 120,
+//   gpa: 3.8,
+//   attendance: "92%"
+// };
 // const WelcomeHeader = styled(Typography)(({ theme }) => ({
 //   color: '#003C64',
 //   fontWeight: 700,
@@ -21,7 +21,7 @@ const student = {
 
 // Container for the page, padding to account for AppBar
 const PageContainer = styled(Box)(() => ({
-  paddingTop: 80,
+  paddingTop: 20,
   minHeight: "100vh",
   background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
   paddingLeft: 24,
@@ -93,7 +93,7 @@ const MetricValue = styled(Typography)(() => ({
 }));
 
 function Main_Panel() {
-  const creditsProgress = ((student.totalCredits - student.remainingCredits) / student.totalCredits) * 100;
+  // const creditsProgress = ((student.totalCredits - student.remainingCredits) / student.totalCredits) * 100;
   const {active_user}=useSelector(state=>state.auth)
  const current_semester=useOutletContext()
  
@@ -106,7 +106,7 @@ function Main_Panel() {
           {/* Credits Progress Card */}
           
           <Grid item xs={12} md={6} m={7}>
-            <StyledCard>
+            {/* <StyledCard>
               <CardContent sx={{ padding: 3 }}>
                 <Typography variant="h6" gutterBottom sx={{ opacity: 0.9 }}>
                   Credit Progress
@@ -137,7 +137,7 @@ function Main_Panel() {
                   {student.remainingCredits} credits remaining to graduate
                 </Typography>
               </CardContent>
-            </StyledCard>
+            </StyledCard> */}
           </Grid>
             {/* Semester Info Card */}
           <Grid item xs={12} sm={6} md={3} m={7}>

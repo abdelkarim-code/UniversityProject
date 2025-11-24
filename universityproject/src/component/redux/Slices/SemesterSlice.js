@@ -5,7 +5,8 @@ import { base_url } from '../../../context';
 const initialState={
     semesters:[],
     isloading:false,
-    status:0
+    status:0,
+    message:''
 }
 //===========thunks funtions
 // # user_id, first_name, last_name, email, password_hash, phone, address, gender, date_created, role
@@ -20,7 +21,7 @@ export const addsemester = createAsyncThunk(
      
     } catch (err) {
         if(err.response?.status==409){
-            return rejectWithValue({status:err.response?.status})
+            return rejectWithValue({status:err.response?.status,message:err.response?.data?.message})
         }
       return rejectWithValue({ status: err.response?.status || 500,error:err });
     }
@@ -71,6 +72,7 @@ const semesterslice = createSlice({
        
         state.isloading=false
         state.status=action.payload.status
+        state.message=action.payload?.message
       }).addCase(getsemesters.fulfilled,(state,action)=>{
         state.semesters=action.payload
       })

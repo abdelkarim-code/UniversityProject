@@ -17,7 +17,7 @@ deRoute.post("/",async(req,res)=>{
      const [newSemester]=await knex("semester").insert(req.body)
        return res.status(201).json({data:newSemester,success:true})
     }  else{
-         return res.status(409).json({success:false})
+         return res.status(409).json({success:false,message:"Cannot add semester: duplicate or existing active/upcoming semester."})
     }  
    
     }catch(err){
@@ -86,4 +86,24 @@ deRoute.delete("/:semesterid",async(req,res)=>{
       return res.status(500).json(err)
     }
 })
+
+deRoute.put("/:id/activate", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Update the semester status to 'active'
+    const updated = await knex("semester")
+      .where({ semester_id: id })
+      .update({ status: "active" });
+
+    if (updated > 0) {
+      return res.status(200).json({ success: true, message: "Semester is now active" });
+    } else {
+      return res.status(404).json({ success: false, message: "Semester not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
 module.exports=deRoute

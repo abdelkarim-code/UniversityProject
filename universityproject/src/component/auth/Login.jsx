@@ -31,7 +31,7 @@ if(status==200){
 
 },[status])
 return (
-         <Box class="liu-background ">
+         <Box className="liu-background ">
 
 
         {isMobile?

@@ -16,8 +16,9 @@ function UserDialog({open,onClose}) {
  const dispatch=useDispatch()
  const {isloading,status}=useSelector(state=>state.doctor)
  useEffect(()=>{
- dispatch(fetchDepartments())
- },[])
+  
+      dispatch(fetchDepartments())
+ },[open, department.departments])
   const Useroptions = [
   'Students',
   'Doctors',
@@ -67,6 +68,8 @@ const handleCancel = () => {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
        const Data=Object.fromEntries(formData.entries())
+     
+         
        if(doctor){
         
          dispatch(addDoctor(Data))
@@ -128,20 +131,21 @@ const handleCancel = () => {
                     handleSubmit(e,false)
                 }
                 
-                }} id="subscription-form">
+                }} id="subscription-form" key={identifier}>
                                            <TextField
                                                             label="First Name"
                                                             name="first_name"
                                                             id="first_name"
                                                             variant="standard"
                                                             margin="dense"
-                                                            required
+                                                            
                                                             fullWidth
                                                             autoFocus
+                                                            key={identifier}
                                                             slotProps={
                                                                identifier=="Doctors"?{htmlInput: {
-                                                                    pattern: "^\\S{1,20}$",
-                                                                    title: "No spaces allowed. Maximum 20 characters.",
+                                                                     pattern: "^[A-Za-z]{1,20}$",
+                                                                     title: "Only letters allowed. No spaces. Max 20 characters."
                                                                     }}:{}
                                                                 }
                                                         />
@@ -154,11 +158,12 @@ const handleCancel = () => {
                                                             variant="standard"
                                                             margin="dense"
                                                             required
+                                                            key={identifier}
                                                             fullWidth
                                                              slotProps={{
                                                                     htmlInput: {
-                                                                    pattern: "^\\S{1,20}$",
-                                                                    title: "No spaces allowed. Maximum 20 characters.",
+                                                                     pattern: "^[A-Za-z]{1,20}$",
+                                                                     title: "Only letters allowed. No spaces. Max 20 characters."
                                                                     },
                                                                 }}
                                                         />

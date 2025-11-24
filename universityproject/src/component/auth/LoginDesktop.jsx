@@ -143,7 +143,7 @@ import CardContent from '@mui/material/CardContent';
         >
           Login
         </Button>
-        <Button
+        {/* <Button
           variant="text"
           sx={{
             color: "#003C64",
@@ -153,7 +153,7 @@ import CardContent from '@mui/material/CardContent';
           }}
         >
           Forgot Password?
-        </Button>
+        </Button> */}
       </CardActions>
     </Card>
     {/* END *********** login card */}
