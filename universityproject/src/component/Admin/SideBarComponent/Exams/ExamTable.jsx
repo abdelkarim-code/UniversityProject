@@ -224,9 +224,7 @@ const ExamTable = () => {
                                             semester_id: selectedSemester 
                                             }));
                                         })
-                                        .catch(() => {
-                                            console.log("Publish cancelled");
-                                        });
+                                        
                                     }}>
                       Publish
                     </PublishButton>
@@ -238,9 +236,7 @@ const ExamTable = () => {
                                            
                                             dispatch(deleteExam({exam_id:exam.exam_id,semester_id:selectedSemester}))
                                         })
-                                        .catch(() => {
-                                            console.log("Delete cancelled");
-                                        });
+                                       
 
                    }}   >
                      Delete

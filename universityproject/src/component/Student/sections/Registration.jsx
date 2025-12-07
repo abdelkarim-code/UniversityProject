@@ -98,7 +98,7 @@ const Registration = () => {
        dispatch(getSections({course_id:course?.course_id,campus:campuses[0].campus||"",semester_id}))
   };
   const handleRefetchSection=(campus)=>{
-    console.log(campus)
+    
     if(selectedCourse){
           const {semester_id}=current_semester
   dispatch(getSections({course_id:selectedCourse?.course_id,campus:campus,semester_id}))
@@ -119,14 +119,14 @@ const Registration = () => {
           const {semester_id:semester}=current_semester
          const request=await dispatch(registerCourseBystudent({student_id,semester,assignment_id:course?.assignment_id,
             course_id:selectedCourse?.course_id})).unwrap()
-            console.log(request)
+            
             if(request==201){
                setDetailDialogOpen(false);
                getAvailableCoursesToDisplay()
             }
         }
-    }catch(err){
-      console.log(err)
+    }catch{
+      return;
     }
   }
          

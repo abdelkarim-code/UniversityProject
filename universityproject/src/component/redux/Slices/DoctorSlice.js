@@ -43,7 +43,7 @@ export const fetchDoctorsByDepartment = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({ status: err});
     }
   }
@@ -57,7 +57,7 @@ export const getAssignCoursesToDoctor = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({ status: err});
     }
   }
@@ -90,7 +90,7 @@ const doctorslice = createSlice({
         state.isloading=false
         state.status=action.payload
       }).addCase(addDoctor.rejected,(state,action)=>{
-        console.log("from rejected section")
+       
         state.isloading=false
         state.status=action.payload.status
       }).addCase(fetchDoctorsByDepartment.fulfilled,(state,action)=>{

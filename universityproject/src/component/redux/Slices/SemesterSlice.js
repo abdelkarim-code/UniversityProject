@@ -35,8 +35,8 @@ export const getsemesters = createAsyncThunk(
       const response = await axios.get(`${base_url}/semesters`);
           return response.data
      
-    } catch (err) {
-       console.log(err)
+    } catch{
+       return []
     }
   }
 );
@@ -48,8 +48,8 @@ export const getCurrentSemester = createAsyncThunk(
       const response = await axios.get(`${base_url}/semesters/CurrentSemester`);
           return response.data
      
-    } catch (err) {
-       console.log(err)
+    } catch {
+       return []
     }
   }
 );

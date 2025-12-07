@@ -97,9 +97,8 @@ function Doctor_Home_page() {
       
       navigate("/Liu/Login")
     }
-    }catch(err){
-      console.log("from err: ")
-      console.log("from token check: ",err)
+    }catch{
+   
        navigate("/Liu/Login")
     }
     

@@ -22,13 +22,13 @@ const initialState={
 export const createRooms = createAsyncThunk(
   "rooms/create",
   async (requestData,{rejectWithValue}) => {
-    console.log(requestData)
+    
     try {
       const response = await axios.post(`${base_url}/rooms`, requestData);
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -40,39 +40,39 @@ export const createRooms = createAsyncThunk(
 export const fetchCampuses = createAsyncThunk(
   "campus/fetchAll",
   async (_,{ rejectWithValue }) => {
-    console.log("from fetch campuses")
+    
     try {
       const response = await axios.get(`${base_url}/rooms/getCampuses`);
       return response.data
     } catch (err) {
-      console.log(err.message)
-      return rejectWithValue({ status: err});
+      
+      return rejectWithValue({ status: err.response?.status || 500});
     }
   }
 );
 export const fetchBlocks = createAsyncThunk(
   "block/fetchAll",
   async (campus,{ rejectWithValue }) => {
-   console.log("from fetch blocks: ",campus)
+   
     try {
       const response = await axios.get(`${base_url}/rooms/getBlocks/${campus}`);
       return response.data
     } catch (err) {
-      console.log(err.message)
-      return rejectWithValue({ status: err});
+      
+      return rejectWithValue({ status: err.response?.status || 500});
     }
   }
 );
 export const fetchRooms = createAsyncThunk(
   "rooms/fetchAll",
   async ({block,campus},{ rejectWithValue }) => {
-   console.log("from fetch rooms: ",block)
+  
     try {
       const response = await axios.get(`${base_url}/rooms/getRooms/${block}/${campus}`);
       return response.data
     } catch (err) {
-      console.log(err.message)
-      return rejectWithValue({ status: err});
+      
+      return rejectWithValue({ status: err.response?.status || 500});
     }
   }
 );
@@ -100,7 +100,7 @@ const RoomSlice = createSlice({
        
     },
      DeleteBlock:(state,action)=>{
-        console.log("delete block",action.payload)
+        
         state.requestData.blocks.splice(action.payload.index,1)
     },
     ClearBlocks:state=>{state.blocks=[]

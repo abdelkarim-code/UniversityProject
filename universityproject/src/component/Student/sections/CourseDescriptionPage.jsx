@@ -84,7 +84,7 @@ const CourseDescriptionPage = () => {
   const dispatch=useDispatch()
   const {courses}=useSelector(state=>state.course)
   const [types_courses,settypes_courses]=useState(false)
-  console.log(active_user?.department_id)
+  
   useEffect(()=>{
         if(active_user){
             dispatch(fetchCoursesByDepartment(active_user?.department_id))

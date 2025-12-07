@@ -103,7 +103,7 @@ setblock("")
 setfloors([])
 },[blocks,duplicated])
 useEffect(()=>{
-console.log(status)
+
 if(status==201){
   setopen({state:true,message:"Rooms added successfully",color:"success"})
 }else if (status==409){

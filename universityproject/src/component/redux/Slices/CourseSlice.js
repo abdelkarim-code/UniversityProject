@@ -26,7 +26,7 @@ export const addCourse = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -38,7 +38,7 @@ export const addCourse = createAsyncThunk(
 export const updateCourse = createAsyncThunk(
   "course/update",
   async ({ courseid, data }, {  dispatch }) => {
-    console.log(data)
+   
     try {
       const response = await axios.put(`${base_url}/courses/${courseid}`,{...data
         ,semester:data?.semester=="Fall"?1:2
@@ -53,7 +53,7 @@ export const updateCourse = createAsyncThunk(
 
       return response.status;
     } catch (err) {
-      console.log(err.message);
+      
       if (err.response?.status === 409) {
         return { status: 409, message: "Course code or name already exists." }
         // return rejectWithValue({ status: 409, message: "Course code or name already exists." });
@@ -77,7 +77,7 @@ export const deleteCourse = createAsyncThunk(
 
       return response.status;
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
@@ -91,7 +91,7 @@ export const fetchCoursesByDepartment = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({ status: err});
     }
   }
@@ -104,7 +104,7 @@ export const fetchTypeOfcourses = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({ status: err});
     }
   }
@@ -117,7 +117,7 @@ export const fetchCoursesByProgram = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+     
       return rejectWithValue({ status: err});
     }
   }
@@ -131,7 +131,7 @@ export const AssignCourseToDoctor = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+    
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409,message:err?.response?.data?.message });
       }
@@ -148,7 +148,7 @@ export const fetchPrerequisitesByCourse_id = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({status: err});
     }
   }
@@ -156,14 +156,14 @@ export const fetchPrerequisitesByCourse_id = createAsyncThunk(
 export const addPrerequisitesToCourse = createAsyncThunk(
   "course/ADDpre",
   async (pre_set, { rejectWithValue }) => {
-    console.log(pre_set)
+    
     
    try {
       const response = await axios.post(`${base_url}/courses/AssignPrerequisitesToCourses`, pre_set);
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+     
       
       
       return rejectWithValue({ status: err.response?.status || 500 });
@@ -176,7 +176,7 @@ export const deletePrerequestcourse = createAsyncThunk(
   
     try {
       const response = await axios.delete(`${base_url}/courses/deletePrerequest/${main_cid}/${pre_cid}`);
-      console.log(response.status)
+    
       return response.status
     } catch (err) {
 
@@ -194,7 +194,7 @@ export const fetchAssignmentsByDeptAndSemester = createAsyncThunk(
       );
       return response.data;
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
@@ -204,7 +204,7 @@ export const deleteAssignment = createAsyncThunk(
   async ({ assignment_id  }, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`${base_url}/courses/deleteAssign/${assignment_id}`);
-        console.log(response.status)
+        
       if (response.status === 200) {
         // refresh assignment list after deletion
        return response.status;
@@ -212,7 +212,7 @@ export const deleteAssignment = createAsyncThunk(
 
       
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
@@ -276,7 +276,7 @@ const CourseSlice = createSlice({
     state.status=action.payload.status
     state.isloading=false
   }).addCase(deletePrerequestcourse.fulfilled,(state,action)=>{
-    console.log("payload: ",action.payload)
+    
     state.status=action.payload
   })
   }

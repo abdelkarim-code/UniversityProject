@@ -39,6 +39,7 @@ import { getsemesters } from '../redux/Slices/SemesterSlice';
 import ExamTable from './SideBarComponent/Exams/ExamTable';
 import Display from './SideBarComponent/users/Display';
 import SemesterSectionDemo from './SideBarComponent/MainLogoSection/SemesterCard';
+import DrapDropAddStudentDialog from './Dialogs/DrapDropAddStudentDialog';
 const demoTheme = createTheme({
 
   palette: {
@@ -185,6 +186,7 @@ function AdminView() {
   const [semesters, setSemesters] = useState([]);
   const [departments, setDepartments] = useState([]);
    const dispatch=useDispatch()
+    const {setDragDrop,openDragDrop}=useAlert()
   useEffect(()=>{
   //  router.navigate("/allttem")
   if(!openDialogCompoent.status&&openDialogCompoent.identifier=="return"){
@@ -216,7 +218,7 @@ function AdminView() {
           return <SemesterSectionDemo/>
       
         default:
-          console.log("router not specified")
+          return null
     }
   }
  const handleOpenChoosenDialog=(action)=>{
@@ -233,11 +235,11 @@ function AdminView() {
       case'Schedule Exam':
       setAddExamDialogOpen(true)
       break
-        default:console.log("no action like this")
+        default:return;
      }
  }
    const onClosechoosenDialog=(data="",identifier)=>{
-    console.log(data,identifier)
+    
     if(identifier=="cancel_btn"){
       setOpenChoosenDialog(false)
     }else{
@@ -291,6 +293,7 @@ function AdminView() {
        <Dialogs_Component open={openDialogCompoent.status}  Close={setopenDialogCompoent} identifier={openDialogCompoent.identifier}/>
       <UserDialog open={openUserDialog} onClose={setOpenUserDialog}/>
       <AddSemesterDialog open={openSemesterDialog} onClose={setOpenSemesterDialog}/>
+      <DrapDropAddStudentDialog open={openDragDrop} setOpen={setDragDrop} /> 
        <AddExamDialog
       open={AddExamDialogOpen}
       onClose={() => setAddExamDialogOpen(false)}

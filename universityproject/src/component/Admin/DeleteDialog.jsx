@@ -18,13 +18,13 @@ export default function AlertDialog({open,setOpen,Data,id}) {
   setOpen({status:false,faculty_id:0,name:""})
   };
   const handleClick = (id,Data) => {
-    console.log(Data)
+    
    dispatch(deleteFaculty(id||0))
   setOpen({status:false,faculty_id:0,name:""})
   setDeletedName(Data)
   };
   useEffect(()=>{
-    console.log(deletedName)
+    
    if(status==200){
     alert.setopen({state:true,message:`${deletedName} is removed successfully`,color:"warning"})
     dispatch(fetchFaculties())

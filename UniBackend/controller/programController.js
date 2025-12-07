@@ -37,6 +37,18 @@ deRoute.get("/:departmentid/departments",async(req,res)=>{
       return res.status(500).json(err)
     }
 })
+// for test only ,its will be removed later
+deRoute.get("/",async(req,res)=>{
+   
+    try{
+     const departments=await knex("programs").select("*")
+     
+        return res.status(200).json(departments)
+    
+    }catch(err){
+      return res.status(500).json(err)
+    }
+})
 deRoute.put("/:programid",async(req,res)=>{
     const {programid}=req.params
     const {name}=req.body

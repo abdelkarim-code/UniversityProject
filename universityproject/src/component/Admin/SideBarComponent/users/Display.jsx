@@ -153,11 +153,11 @@ const filteredData = useMemo(() => {
   };
 
   const handleView = (user) => {
-    console.log(user)
+    
   setSelectedUser(user);
   setDialogOpen(true);
 };
-console.log(dialogOpen)
+
   return (
     <StyledPaper>
       {/* Tabs */}

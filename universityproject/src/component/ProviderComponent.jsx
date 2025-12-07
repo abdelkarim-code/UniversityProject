@@ -5,8 +5,9 @@ import { AlertContext } from '../context';
 
 export const AlertProvider=({children})=>{
     const [open,setopen]=useState({state:false,message:"",color:"success"})
+    const [openDragDrop,setDragDrop]=useState(false)
     return (
-     <AlertContext.Provider value={{open,setopen}}>
+     <AlertContext.Provider value={{open,setopen,openDragDrop,setDragDrop}}>
 
      {children}
         <Snackbar open={open.state} autoHideDuration={6000} onClose={()=>setopen({...open,state:false,message:""})}>

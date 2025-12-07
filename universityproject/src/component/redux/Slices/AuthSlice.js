@@ -31,7 +31,7 @@ export const UserLogin = createAsyncThunk(
       
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 401) {
         return rejectWithValue({ status: 401 });
       }
@@ -75,7 +75,7 @@ export const CheckTokenValidation = createAsyncThunk(
 export const Logout = createAsyncThunk(
   "auth/Logout",
   async (s_or_d) => {
-    console.log(s_or_d)
+    
    try {
       const response = await axios.get(`${base_url}/users/Login/Logout/${s_or_d}`,{ withCredentials: true });
         
@@ -100,7 +100,7 @@ const AuthSlice = createSlice({
     state.isloading=true
     state.status=0
   }).addCase(UserLogin.fulfilled,(state,action)=>{
-    console.log("fullfilled ",action.payload)
+   
     state.isloading=false
     state.path=action.payload?.path
     state.status=action.payload?.status

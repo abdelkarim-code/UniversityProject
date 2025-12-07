@@ -29,7 +29,7 @@ export const createExam = createAsyncThunk(
 
       return {status:response.status,message:response.data.message};
     } catch (err) {
-      console.log(err.message);
+      
 
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409,message:err.response.data.message });
@@ -73,7 +73,7 @@ export const fetchExams = createAsyncThunk(
       const response = await axios.get(`${base_url}/exams/${semester_id}/semester`);
       return response.data;
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
@@ -88,7 +88,7 @@ export const deleteExam = createAsyncThunk(
       dispatch(fetchExams(semester_id))
       return response.status;
     } catch (err) {
-      console.log(err.message);
+      
 
       if (err.response?.status === 404) {
         return rejectWithValue({ status: 404 });
@@ -111,7 +111,7 @@ export const publishExam = createAsyncThunk(
 
       return response.status;
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue(err.response?.status || 500);
     }
   }
@@ -123,7 +123,7 @@ export const fetchPublishedExams = createAsyncThunk(
       const response = await axios.get(`${base_url}/exams/${semester_id}/semester/published`);
       return response.data;
     } catch (err) {
-      console.log(err.message);
+      
       return rejectWithValue({ status: err.response?.status || 500 });
     }
   }

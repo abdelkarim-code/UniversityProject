@@ -1,9 +1,31 @@
 const express=require("express")
 const studentRoute=express.Router()
 const knex=require("../db")
-const {faker}=require("@faker-js/faker")
-
-
+const {faker, de}=require("@faker-js/faker")
+const multer  = require('multer')
+const upload = multer({ storage: multer.memoryStorage() });
+const xlsx = require('xlsx');
+//student shema for validation in excel file upload
+const cities = [
+  "Beirut",
+  "Tripoli",
+  "Sidon",
+  "Tyre",
+  "Zahle",
+  "Byblos",
+  "Baalbek",
+  "Jounieh",
+];
+const Joi = require('joi');
+const studentSchema = Joi.object({
+  first_name: Joi.string().pattern(/^[A-Za-z]+$/).required(),
+  last_name: Joi.string().pattern(/^[A-Za-z]+$/).required(),
+  phone: Joi.string().pattern(/^[0-9]{6,15}$/).required(),
+  address: Joi.string().valid(...cities).required(), // spread the array
+  gender: Joi.string().valid("Male", "Female").required(),
+  department_code: Joi.string().required(),
+  program_name: Joi.string().required()
+});
 studentRoute.post("/:user_id/users/:department_id/departments/:program_id/programs",async(req,res)=>{
    if(Object.keys(req.body).length>0){
     const {user_id,department_id,program_id}=req.params
@@ -35,6 +57,13 @@ studentRoute.post("/:user_id/users/:department_id/departments/:program_id/progra
 }else{
     return res.status(500).json({err:"no body parameter founded"})
 }
+})
+//test endpoint to get all students
+studentRoute.get("/",async(req,res)=>{
+   
+
+     const students=await knex("students").select("*")
+     return res.status(200).json(students)
 })
 studentRoute.get("/:year", async (req, res) => {
   const { year } = req.params; // e.g., /students/2025
@@ -216,6 +245,167 @@ studentRoute.get("/getRegisteredCourses/:studentid/:semesterid",async(req,res)=>
 }else{
     return res.status(500).json({err:"no  parameter founded"})
 }
+})
+studentRoute.post("/uploadStudents",upload.single("file"),async(req,res)=>{
+  try{
+  
+     if(!req.file) return res.status(400).json({err:"No file uploaded"}) 
+    
+    const fileBuffer = req.file.buffer //file content in buffer
+    //read buffer using xlsx
+    const workbook=xlsx.read(fileBuffer)
+  let students = workbook.SheetNames
+     .map(sheetName => xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" }))
+     .flat();
+
+      //check if excel is empty
+   if (students.length===0) return res.status(400).json({err:"Excel file is empty"})
+  //ensure all keys are in lowercase and trimmed
+    students = students.map(student =>
+  Object.fromEntries(
+    Object.entries(student).map(([k, v]) => [k.toLowerCase().trim(), v.toString()])
+  )
+);
+    //validare Required Keys 
+        let requiredKeys = ["first_name", "last_name", "phone", "address", "gender", "department_code", "program_name"];
+    for (const sheetName of workbook.SheetNames) {
+      const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+      if(sheetData.length === 0) continue
+      if(!requiredKeys.every(key=>key in sheetData[0])){
+        return res.status(400).json({err:`Missing required keys in sheet ${sheetName}`})
+      }
+    }
+    const departments=new Set()
+    const programs=new Set()
+    
+    for(let student of students){ 
+      departments.add(student.department_code?.toLowerCase().trim())
+      programs.add(student.program_name?.toLowerCase().trim())
+    }
+    
+    //validate data using Joi
+     const { error } = Joi.array().items(studentSchema).validate(students, { abortEarly: false });
+
+      if (error) {
+        const errors = error.details.map(d => ({
+                row: d.path[0] + 2,       // Excel row number (index + 1)
+                field: d.path[1],          // field name
+                message: d.message         // human-readable message
+              }));
+        return res.status(422).json({ err: errors});
+      }
+    //check departments and programs from excel if not exist in db to trace errors early
+    const existingDepartments=await knex("departments").whereIn(knex.raw("LOWER(TRIM(code))"),Array.from(departments))
+    const existingPrograms=await knex("programs").whereIn(knex.raw("LOWER(TRIM(name))"),Array.from(programs))
+     if (existingDepartments.length !== departments.size)
+          return res.status(400).json({
+                err: "Some departments from the Excel file do not exist in the database. Please check your department names."
+          });
+
+          if (existingPrograms.length !== programs.size)
+         return res.status(400).json({
+                err: "Some programs from the Excel file are missing in the database. Please verify the program names."
+          });
+    //create maps for quick lookup
+    const departmentMap=new Map()
+    existingDepartments.forEach(dept=>{
+      if(dept.code){
+        departmentMap.set(dept.code,dept.department_id)
+      }
+    })
+      const programMap=new Map()
+    existingPrograms.forEach(prg=>{
+      if(prg.name){
+        programMap.set(prg.name,prg.program_id)
+      }
+    })
+  
+    //check each program is under the correct department in each student record
+    for(let student of students){
+      const dept_id=existingPrograms.find(pr=>pr?.name==student.program_name)?.department_id
+      const student_dept_id=departmentMap.get(student?.department_code.toUpperCase())
+      
+      if(dept_id!=student_dept_id){
+        return res.status(400).json({err:`Program ${student.program_name} is not under Department ${student.department_code.toUpperCase()}`})
+      }
+
+    }
+    
+    //all validation passed proceed to insert
+    await knex.transaction(async(trx)=>{
+
+       let chunksize=20
+      for(let i=0;i<students.length;i+=chunksize){ 
+
+        const chunk=students.slice(i,i+chunksize)
+         //ensure student_code uniqueness
+        let student_codes=chunk.map(({department_code}) =>`${departmentMap.get(department_code.toUpperCase())}${new Date().getFullYear()%100}${faker.string.numeric(4)}`)
+        let uniqueCodes=new Set(student_codes)
+        let existingCodes=await trx("students").whereIn("student_code",Array.from(uniqueCodes))
+        while(existingCodes.length>0||uniqueCodes.size<chunk.length){
+          //regenerate codes until unique
+          student_codes=chunk.map(({department_code}) =>`${departmentMap.get(department_code.toUpperCase())}${new Date().getFullYear()%100}${faker.string.numeric(4)}`)
+          uniqueCodes=new Set(student_codes)
+          existingCodes=await trx("students").whereIn("student_code",Array.from(uniqueCodes))
+        }
+        uniqueCodes=Array.from(uniqueCodes)
+
+
+        
+        //all unique now proceed to create users and students
+        const inserted_student=chunk.map((student,i)=>{
+         let email=`${uniqueCodes[i]}@students.liu.edu.lb`
+            let password_hash=faker.string.alpha(8);
+          
+            return {first_name:student?.first_name,
+                    last_name:student?.last_name,
+                    email,password_hash,
+                    phone:student?.phone,
+                    address:student?.address,
+                    gender:student?.gender,
+                    role:3
+                    
+            }
+        })
+        const lowerProgramMap=new Map()
+         programMap.forEach((value,key)=>{
+          lowerProgramMap.set(key.toLowerCase().trim(),value)
+         })
+        
+        const [insertedUsers]=await trx("users").insert(inserted_student)
+        const users_ids=inserted_student.map((_,index)=>insertedUsers+index)
+       
+        const studentsToInsert=chunk.map((student,i)=>{
+          
+         
+          return {
+            user_id:users_ids[i],
+            student_code:uniqueCodes[i],
+            department_id:departmentMap.get(student?.department_code.toUpperCase()),
+            program_id:lowerProgramMap.get(student?.program_name.toLowerCase().trim())
+          }
+        }) 
+        
+        if(studentsToInsert.length>0)
+        await trx("students").insert(studentsToInsert)
+
+      }
+    }).then(()=>{
+        return res.status(200).json({
+         message: `Excel file processed successfully. ${students.length} students added to the database.`
+      });
+    }).catch((err)=>{
+      console.log(err.message)
+         return res.status(500).json({err:err.message||"Transaction failed"})
+    })
+     
+
+      }catch(err){
+        console.log(err.message)
+        return res.status(500).json({err:err.message||"File processing failed"})
+      }
+
+
 })
 
 module.exports=studentRoute

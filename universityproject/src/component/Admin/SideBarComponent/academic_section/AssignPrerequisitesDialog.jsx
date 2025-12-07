@@ -14,7 +14,7 @@ function AssignPrerequisitesDialog({AssignDialog,setAssignDialog}) {
     const [checked,setchecked]=useState({prerequestCoursesid:[]})
     const dispatch=useDispatch()
    const ref=useRef(false)
-    console.log(checked)
+    
     const handleCheckedBox=(e,{main_course,pre_course})=>{
         //# course_id, prerequisite_course_id
        

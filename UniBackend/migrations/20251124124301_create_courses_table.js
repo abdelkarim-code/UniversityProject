@@ -15,7 +15,7 @@ exports.up = async function(knex) {
       table.integer('level').notNullable();
       table.integer('semester').notNullable();
       table.integer('program_id').unsigned().notNullable();
-      table.enu('course_category', ['major', 'major_elective', 'elective', 'remedial', 'lab', 'graduation_project']).defaultTo('major');
+      table.enum('course_category', ['major', 'major_elective', 'elective', 'remedial', 'lab', 'graduation_project']).defaultTo('major');
 
       // Foreign keys
       table.foreign('department_id').references('departments.department_id').onDelete('CASCADE');

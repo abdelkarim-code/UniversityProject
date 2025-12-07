@@ -20,6 +20,7 @@ const courseCategories = [
   'graduation_project'
 ];
 function Dialogs_Component({open,Close,identifier=""}) {
+  
     const {setopen}=useAlert()
     const {isloading,status,faculties}=useSelector((state)=>state.faculty)
     const department=useSelector((state)=>state.department)
@@ -73,11 +74,12 @@ useEffect(()=>{
 if(identifier=="programs"||identifier=="Courses"){
      dispatch(fetchDepartments())
     }
+   
 },[open,identifier])
 
  const handleSubmit = async(event,identifier) => {
     event.preventDefault();
-    console.log(identifier)
+    
     const formData = new FormData(event.currentTarget);
     
     if(identifier=="Faculities"){
@@ -85,7 +87,19 @@ if(identifier=="programs"||identifier=="Courses"){
       dispatch(createFaculty({name,description}))
     }else if(identifier=="Departments"){
         const DepartmentData=Object.fromEntries(formData.entries())
-        dispatch(createDepartment(DepartmentData))
+       if(DepartmentData?.faculty_id!=0){
+          if(DepartmentData.name.split("Department of")[1]!=" "){
+                setdepartmentname("")
+         dispatch(createDepartment(DepartmentData))
+          }else{
+            setopen({state:true,message:"Ensure to Write a department name",color:"error"})
+          }
+      
+        }else{
+          setopen({state:true,message:"Select a faculty name to proceed",color:"error"})
+        }
+        
+        
     }else if(identifier=="programs"){
         const ProgramData=Object.fromEntries(formData.entries())
         dispatch(createProgram(ProgramData))
@@ -176,15 +190,28 @@ if(identifier=="programs"||identifier=="Courses"){
                     
                 </Select>
             <TextField
-              autoFocus
+             
               required
               margin="dense"
               id="name"
               name="name"
+              value={departmentname}
+              onFocus={()=>{
+                if(departmentname=="")
+                  setdepartmentname("Department of ")
+
+              }}
+              onChange={(e)=>{
+                if(e.target.value.startsWith("Department of ")){
+                  setdepartmentname(e.target.value)
+                }
+              }}
+               helperText={departmentname!=""&&"The 'Department of' part is fixed and cannot be edited."}
               label="Department Name"
               type="text"
               fullWidth
               variant="standard"
+              autoComplete='off'
             />
             <TextField
               autoFocus
@@ -192,7 +219,7 @@ if(identifier=="programs"||identifier=="Courses"){
               margin="dense"
               id="code"
               name="code"
-              label="Faculty Code"
+              label="Department Code"
               type="text"
               fullWidth
               variant="standard"
@@ -208,7 +235,7 @@ if(identifier=="programs"||identifier=="Courses"){
               margin="dense"
               id="description"
               name="description"
-              label="Faculty Description"
+              label="Department Description"
               type="text"
               fullWidth
               variant="standard"
@@ -232,6 +259,7 @@ if(identifier=="programs"||identifier=="Courses"){
               name="degree_type"
               label="Choose the Degree_type"
                 fullWidth
+                
                value={facultyId}
                onChange={(e)=>setfacultyId(e.target.value)}
               variant="standard"
@@ -501,7 +529,9 @@ if(identifier=="programs"||identifier=="Courses"){
 
         </DialogContent>
         <DialogActions>
-          <Button onClick={()=>Close({status:false,identifier:"return"})}>Cancel</Button>
+          <Button onClick={()=>{Close({status:false,identifier:"return"})
+        setdepartmentname("")
+        }}>Cancel</Button>
           <Button type="submit" form="subscription-form" loading={isloading||department.isloading}>
             Submit
           </Button>

@@ -7,12 +7,14 @@ import { fetchDepartments, fetchProgramsByDepartment } from '../redux/Slices/Dep
 import { addDoctor } from '../redux/Slices/DoctorSlice';
 import { addstudent } from '../redux/Slices/StudentSlice';
 
+
 function UserDialog({open,onClose}) {
  const [value, setValue] = useState("");
  const [identifier,setidentifier]= useState("");
  const department=useSelector((state)=>state.department)
   const student=useSelector((state)=>state.student)
  const {setopen}=useAlert()
+  const {setDragDrop}=useAlert()
  const dispatch=useDispatch()
  const {isloading,status}=useSelector(state=>state.doctor)
  useEffect(()=>{
@@ -74,13 +76,16 @@ const handleCancel = () => {
         
          dispatch(addDoctor(Data))
        }else{
-        console.log("student: ",Data)
+        
         dispatch(addstudent(Data))
        }
     
       
     }
-
+const handleOpenDragDropDialog=()=>{
+setDragDrop(true)
+  onClose(false);
+}
   const handleChange = (event) => {
     setValue(event.target.value);
   };
@@ -101,7 +106,12 @@ const handleCancel = () => {
       open={open}
     
     >
-      <DialogTitle>{WriteATitleBasedOnIdentifier()}</DialogTitle>
+     
+
+      <DialogTitle style={{display:"flex" ,justifyContent:"space-between"}}>
+        {WriteATitleBasedOnIdentifier()}
+        {identifier=='Students'&&<Button color='warning' variant='contained' onClick={handleOpenDragDropDialog}>Import from Excel</Button>}
+        </DialogTitle>
       <DialogContent dividers>
       
         {identifier==""&&(

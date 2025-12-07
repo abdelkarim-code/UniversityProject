@@ -56,8 +56,8 @@ const TokenCheck=async()=>{
   }else if(req.status==401){
     navigate("/Liu/Login")
   }
-  }catch(err){
-    console.log("from token check: ",err)
+  }catch{
+    
      navigate("/Liu/Login")
   }
   

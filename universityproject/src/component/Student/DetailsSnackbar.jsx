@@ -10,7 +10,7 @@ export default function DetailsSnackbar(props) {
   const {open,type,name,code,description}=props?.openDetails??{}
  
   const title = type === "course" ? "Course Details" : "Department Details";
-    console.log("from snachbar",open,type,name)
+   
   return (
     <Tooltip title={"Tap anywhere outside this box to close."} placement="bottom" arrow ><Snackbar
       open={open}

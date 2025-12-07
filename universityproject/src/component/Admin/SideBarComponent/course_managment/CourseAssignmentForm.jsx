@@ -69,7 +69,7 @@ const dispatch=useDispatch()
  useEffect(()=>{
 
   if(view!="choice1"){
-    console.log("from initial useffect ref=false")
+    
   dispatch(fetchDepartments())
   setloading(false)
   dispatch(ClearBlocks())
@@ -124,7 +124,7 @@ useEffect(()=>{
       const formData = new FormData(event.currentTarget);
        const Data=Object.fromEntries(formData.entries())
        
-     console.log(campuses)
+    
        if(Data?.room_id){
         
         const room_id=rooms.find((r)=>r.room_number==Data.room_id)?.id
@@ -139,7 +139,11 @@ useEffect(()=>{
 
 
        }else{
-        console.log("no room id")
+        alert.setopen({
+        state: true,
+        message: "Select a room to proceed",
+        color: "error",
+      });
        }
       
     
@@ -341,9 +345,7 @@ useEffect(()=>{
          options={rooms}
          getOptionLabel={(option)=>option?.room_number}
          key="third_combo"
-         onChange={(_,value)=>{
-          console.log(value)
-         }}
+        
          autoComplete
          autoHighlight
          autoSelect

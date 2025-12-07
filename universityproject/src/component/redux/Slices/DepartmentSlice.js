@@ -13,7 +13,7 @@ const initialState={
 export const createDepartment = createAsyncThunk(
   "Department/create",
   async ({code,description,name,faculty_id}, { rejectWithValue,dispatch }) => {
-    console.log("from thunk data: ",name,faculty_id)
+   
     
     try {
       const response = await axios.post(`${base_url}/departments/${Number(faculty_id)}/faculties`, {name,code,description});
@@ -22,7 +22,7 @@ export const createDepartment = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -41,7 +41,7 @@ export const createProgram = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -57,8 +57,8 @@ export const fetchDepartments = createAsyncThunk(
       const response = await axios.get(`${base_url}/departments`);
       return response.data
     } catch (err) {
-      console.log(err.message)
-      return rejectWithValue({ status: err});
+      
+      return rejectWithValue({ status: err.message});
     }
   }
 );
@@ -70,8 +70,8 @@ export const fetchProgramsByDepartment = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
-      return rejectWithValue({ status: err});
+      
+      return rejectWithValue({ status: err.message});
     }
   }
 );
@@ -83,7 +83,7 @@ export const fetchDepartmentByFaculty = createAsyncThunk(
     
       return response.data
     } catch (err) {
-      console.log(err.message)
+      
       return rejectWithValue({ status: err});
     }
   }
@@ -97,7 +97,7 @@ export const editDepartment = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -115,7 +115,7 @@ export const deleteDepartment = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+     
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }

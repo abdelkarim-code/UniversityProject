@@ -7,6 +7,7 @@ const initialState={
     students:[],
     isloading:false,
     status:0,
+    
    
 }
 //===========thunks funtions
@@ -18,9 +19,9 @@ export const addstudent = createAsyncThunk(
     // const {department_id,specialization}=studentdata
    try {
       const response = await axios.post(`${base_url}/users`,{first_name,last_name,gender,address,phone,role:3,department_id});
-           console.log(response.data)
+           
       if(response.data.success&&response.status==201){
-         console.log(response.data)
+        
          const addstudentRequest = await axios.post(
             `${base_url}/students/${response.data.data}/users/${department_id}/departments/${program_id}/programs`,
             {student_code:response.data.student_code}
@@ -44,7 +45,7 @@ export const registerCourseBystudent = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       
       
       return rejectWithValue({ status: err.response?.status || 500 });
@@ -59,8 +60,29 @@ export const fetchStudentsByYear = createAsyncThunk(
       const response = await axios.get(`${base_url}/students/${year}`);
       return response.data;
     } catch (err) {
-      console.error(err.message);
+      
       return rejectWithValue(err.response?.data || { status: 500, message: err.message });
+    }
+  }
+);
+export const UploadStudentViaExcel = createAsyncThunk(
+  "student/UploadStudentViaExcel",
+  async (data, ) => {
+    
+    
+   try {
+    const formData = new FormData();
+    formData.append('file', data);
+      const response = await axios.post(`${base_url}/students/uploadStudents`,formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      return {status:response.status,message:response.data?.message};
+    } catch (err) {
+       return {status:err.response?.status||500,message:err.response?.data.err||"An error occurred"};
+      // return rejectWithValue({ status: err.response?.status || 500 });
     }
   }
 );
@@ -80,7 +102,7 @@ const studentslice = createSlice({
         state.isloading=false
         state.status=action.payload
       }).addCase(addstudent.rejected,(state,action)=>{
-        console.log("error: ",action.payload.error)
+       
         state.isloading=false
         state.status=action.payload.status
       })

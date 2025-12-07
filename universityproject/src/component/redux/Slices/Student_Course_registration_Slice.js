@@ -22,14 +22,13 @@ export const getAvailableCourses = createAsyncThunk(
       );
      
       if(response.status==200){
-         console.log("from thunk: ",JSON.stringify(DATA||1))
-       console.log("from thunk: ",JSON.stringify(response.data||1))
+     
         return response.data
       }
       
     } catch (err) {
       
-      console.log(err.message)
+   
       if (err.response?.status === 401) {
         return rejectWithValue({ status: 401 });
       }
@@ -47,13 +46,13 @@ export const getSections = createAsyncThunk(
     const response = await axios.get(`${base_url}/students/getSections/${course_id}/${semester_id}/${campus}`);
      
       if(response.status==200){
-        console.log(response.data)
+        
         return response.data
       }
       
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 401) {
         return rejectWithValue({ status: 401 });
       }

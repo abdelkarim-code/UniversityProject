@@ -21,7 +21,7 @@ export const createFaculty = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -39,7 +39,7 @@ export const editFaculty = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+     
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
@@ -56,7 +56,7 @@ export const fetchFaculties = createAsyncThunk(
       const response = await axios.get(`${base_url}/faculties`);
       return response.data
     } catch (err) {
-      console.log(err.message)
+     
       return rejectWithValue({ status: err});
     }
   }
@@ -70,7 +70,7 @@ export const deleteFaculty = createAsyncThunk(
       return response.status
     } catch (err) {
       
-      console.log(err.message)
+      
       if (err.response?.status === 409) {
         return rejectWithValue({ status: 409 });
       }
